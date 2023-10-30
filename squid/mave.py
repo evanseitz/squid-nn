@@ -6,14 +6,16 @@ class InSilicoMAVE():
 
     Parameters
     ----------
-    mut_rate : float, optional
-        Mutation rate for random mutagenesis (defaults to 0.1).
-    start_position : int, optional
-        Index of start position along sequence to probe (defaults to 0).
-    stop_position : int, optional
-        Index of stop position along sequence to probe (defaults to None).
-    uniform : bool
-        uniform (True), Poisson (false); sets the number of mutations per sequence.
+    mut_generator : class
+        Module for performing random mutagenesis.
+    pred_generator : class
+        Module for inferring model predictions.
+    seq_length : int
+        Full length of input sequence.
+    mut_window : [int, int]
+        Index of start and stop position along sequence to probe;
+        i.e., [start, stop], where start < stop and both entries
+        satisfy 0 <= int <= L.
     """
     def __init__(self, mut_generator, mut_predictor, seq_length, mut_window=None):
         self.mut_generator = mut_generator
