@@ -34,7 +34,7 @@ class InSilicoMAVE():
         Parameters
         ----------
         x : torch.Tensor
-            Batch of one-hot sequences (shape: (L,A)).
+            One-hot sequence (shape: (L,A)).
         num_sim : int
             Number of sequences to mutagenize for in silico MAVE.
         seed : int, optional
@@ -43,12 +43,12 @@ class InSilicoMAVE():
         Returns
         -------
         x_mut : numpy.ndarray
-            Sequences with randomly mutated segments, padded to correct shape
-            with random DNA (shape: (N,L,C)).
+            Sequences simulated by mut_predictor.
         y_mut : numpy.ndarray
             Inferred predictions for sequences (shape: (N,1)).
         """
-        np.random.seed(seed)
+        if seed:
+            np.random.seed(seed)
         if verbose:
             print('')
             print('Building in silico MAVE...')
@@ -58,7 +58,7 @@ class InSilicoMAVE():
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
             x_mut_full = self.pad_seq(x_mut, x, self.start_position, self.stop_position)
-            y_mut = self.mut_predictor(x_mut)
+            y_mut = self.mut_predictor(x_mut_full)
         else:
             x_mut = self.mut_generator(x, num_sim)
             y_mut = self.mut_predictor(x_mut)

@@ -89,9 +89,9 @@ def fix_gauge(x, gauge, wt=None, r=None):
     Parameters
     ----------
     x : numpy.ndarray
-        Matrix of attribution scores for a sequence-of-interest (shape : (L,C)).
+        Attribution scores for a sequence-of-interest (shape : (L,C)).
     gauge : gauge mode used to fix model parameters.
-            See https://mavenn.readthedocs.io/en/latest/math.html for more info.
+        See https://mavenn.readthedocs.io/en/latest/math.html for more info.
         'uniform'   :   hierarchical gauge using a uniform sequence distribution over
                         the characters at each position observed in the training set
                         (unobserved characters are assigned probability 0).
