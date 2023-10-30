@@ -1,15 +1,20 @@
 # Configuration file for the Sphinx documentation builder.
+#
+# For the full list of built-in configuration values, see the documentation:
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Project information
+# -- Project information -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'squid'
 copyright = '2023, Evan Seitz, David McCandlish, Justin Kinney, Peter Koo'
 author = 'Evan Seitz, David McCandlish, Justin Kinney, Peter Koo'
 
 release = '0.1'
-version = '0.1.0'
+version = '0.1.4'
 
-# -- General configuration
+# -- General configuration ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
     'sphinx.ext.duration',
@@ -19,13 +24,32 @@ extensions = [
     'sphinx.ext.intersphinx',
 ]
 
-# Do NOT automatically execute notebooks when building.
-#nbsphinx_execute = 'never'
+# Internationalization.
+language = "en"
 
+# AutoAPI options.
+autoapi_type = "python"
+autoapi_dirs = ["../squid-nn"]
+autoapi_options = [
+    "members",
+    "undoc-members",
+    # "private-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+    "imported-members",
+]
+autoapi_ignore = ["*cli*", "*__main__.py"]
+
+templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+
+# Do NOT automatically execute notebooks when building.
+#nbsphinx_execute = 'never'
+
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
