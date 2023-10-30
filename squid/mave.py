@@ -11,7 +11,7 @@ class InSilicoMAVE():
     pred_generator : class
         Module for inferring model predictions.
     seq_length : int
-        Full length of input sequence.
+        Full length L of input sequence.
     mut_window : [int, int]
         Index of start and stop position along sequence to probe;
         i.e., [start, stop], where start < stop and both entries
