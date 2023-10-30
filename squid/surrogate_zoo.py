@@ -15,13 +15,9 @@ class SurrogateBase():
         pass
 
     def train(self, x):
-        """train model
-        """
         raise NotImplementedError()
 
     def get_params(self, x):
-        """train model
-        """
         raise NotImplementedError()
 
 
@@ -31,26 +27,24 @@ class SurrogateLinear(SurrogateBase):
     Parameters
     ----------
     l1 : float, optional
-        Keras regularizer that applies a L1 regularization penalty,
-        with penalty computed as: loss = l1 * reduce_sum(abs(x)).
+        L1 regularization penalty
     l2 : float, optional
-        Keras regularizer that applies a L2 regularization penalty,
-        with penalty is computed as: loss = l2 * reduce_sum(square(x)).
+        L2 regularization penalty
 
     Returns
     -------
     keras.Model
-        Linear model parameters.
+        
     """
     def __init__(self, input_shape, num_tasks, l1=1e-8, l2=1e-4,
-                 alphabet=['A','C','G','T'], gpu=False):
+                 alphabet=['A','C','G','T']):
 
         self.model = self.build(input_shape, num_tasks, l1, l2)
         self.alphabet = alphabet
-        self.gpu = gpu
 
     def build(self, input_shape, num_tasks, l1, l2):
-
+        """Build linear surrogate model."""
+        
         N,L,A = input_shape
 
         # input layer
@@ -67,6 +61,7 @@ class SurrogateLinear(SurrogateBase):
 
     def train(self, x, y, learning_rate=1e-3, epochs=500, batch_size=100, early_stopping=True,
               patience=25, restore_best_weights=True, rnd_seed=None, save_dir=None, verbose=1):
+        """Train linear surrogate model."""
 
         # generate data splits
         train_index, valid_index, test_index = data_splits(x.shape[0], test_split=0.1, valid_split=0.1, rnd_seed=rnd_seed)
@@ -111,6 +106,8 @@ class SurrogateLinear(SurrogateBase):
 
 
     def get_params(self, gauge=None, save_dir=None):
+        """Get parameters of the model."""
+        
         for layer in self.model.layers:
             weights = layer.get_weights()
 
@@ -166,14 +163,13 @@ class SurrogateMAVENN(SurrogateBase):
         The alphabet used to determine the C characters in the logo such that
         each entry is a string; e.g., ['A','C','G','T'] for DNA.
     deduplicate : boole
-        Remove duplicate sequence-function pairs in dataset (True).
-    gpu : boole
-        Enable GPUs (True).
+        Remove duplicate sequence-function pairs in dataset (default: True).
+    gpu : boolean
+        Enable GPUs (default: True).
 
     Returns
     -------
     keras.Model
-        MAVE-NN model parameters.
     """
     def __init__(self, input_shape, num_tasks, gpmap='additive', regression_type='GE',
                  linearity='nonlinear', noise='SkewedT', noise_order=2, reg_strength=0.1,
@@ -196,7 +192,7 @@ class SurrogateMAVENN(SurrogateBase):
     
 
     def dataframe(self, x, y, alphabet, gpu):
-
+        
         N = x.shape[0]
         mave_df = pd.DataFrame(columns = ['y', 'x'], index=range(N))
         mave_df['y'] = y
@@ -327,11 +323,10 @@ class SurrogateMAVENN(SurrogateBase):
 
         Parameters
         ----------
-        model : mavenn.src.model.Model
-            MAVE-NN model object.
         save_dir : str
             Directory for saving figures to file.
-
+        verbose : bool
+            print info
         Returns
         -------
         I_pred : float
@@ -371,8 +366,6 @@ class SurrogateMAVENN(SurrogateBase):
 
         Parameters
         ----------
-        model : mavenn.src.model.Model
-            MAVE-NN model object.
         gauge : gauge mode used to fix model parameters.
                 See https://mavenn.readthedocs.io/en/latest/math.html for more info.
             'uniform'   :   hierarchical gauge using a uniform sequence distribution over
@@ -385,12 +378,13 @@ class SurrogateMAVENN(SurrogateBase):
         
         Returns
         -------
-        theta_0     :   float
-            Constant term in trained parameters.
-        theta_lc    :   numpy.ndarray
-            Additive terms in trained parameters (shape : (L,C)).
-        theta_lclc  :   numpy.ndarray
-            Pairwise terms in trained parameters (shape : (L,C,L,C)), if gpmap is 'pairwise'.
+        tuple 
+            theta_0     :   float
+                Constant term in trained parameters.
+            theta_lc    :   numpy.ndarray
+                Additive terms in trained parameters (shape : (L,C)).
+            theta_lclc  :   numpy.ndarray
+                Pairwise terms in trained parameters (shape : (L,C,L,C)), if gpmap is 'pairwise'.
         """
 
         # fix gauge mode for model representation
@@ -415,12 +409,11 @@ class SurrogateMAVENN(SurrogateBase):
 
 
     def get_logo(self, full_length=None, mut_window=None):
-        """Function to place trained additive parameters into surrounding nonmutated sequence (zeros).
+        """Function to place trained additive parameters into surrounding 
+        nonmutated sequence (zeros).
 
         Parameters
         ----------
-        model : mavenn.src.model.Model
-            MAVE-NN model object.
         full_length : int
             Full length of sequence.
         mut_window : [int, int]
@@ -447,8 +440,32 @@ class SurrogateMAVENN(SurrogateBase):
         return additive_logo
 
 
-def data_splits(N, test_split, valid_split, rnd_seed):
+def data_splits(N, test_split, valid_split, rnd_seed=None):
+    """Function to determine which sequences randomly split into 
+        train, validation, test set.
 
+    Parameters
+    ----------
+    N : int
+        number of data
+    test_splitc : float (between 0 and 1)
+        percent to split into test set
+    valid_split : float (between 0 and 1)
+        percent to split into validation set
+    rnd_seed : int
+        random number seed
+
+    Returns
+    -------
+    train_index
+        array of indices to be included in training set
+    valid_index
+        array of indices to be included in validation set
+    test_index
+        array of indices to be included in test set
+    """
+    if rnd_seed:
+        np.random.seed(rnd_seed)
     train_split = 1 - test_split - valid_split
     shuffle = np.random.permutation(range(N))
     num_valid = int(valid_split*N)
@@ -457,3 +474,5 @@ def data_splits(N, test_split, valid_split, rnd_seed):
     valid_index = shuffle[num_test:num_test+num_valid]
     train_index = shuffle[num_test+num_valid:]
     return train_index, valid_index, test_index
+
+

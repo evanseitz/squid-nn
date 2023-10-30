@@ -3,7 +3,7 @@ import numpy as np
 
 class BaseMutagenesis:
     """
-    Base class for in silico MAVE data generation about a single genomic sequence.
+    Base class for in silico MAVE data generation for a given sequence.
     """
     def __call__(self, x, num_sim):
         """Return an in silico MAVE based on mutagenesis of 'x'.
@@ -11,7 +11,7 @@ class BaseMutagenesis:
         Parameters
         ----------
         x : torch.Tensor
-            Batch of one-hot sequences (shape: (L, A)).
+            one-hot sequence (shape: (L, A)).
         num_sim : int
             Number of sequences to mutagenize.
 

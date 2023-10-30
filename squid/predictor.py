@@ -6,25 +6,10 @@ class BasePredictor():
     Base class for running inference on in silico mutated sequences.
     """
 
-    def __init__(self, pred_fun, reduce_fun, task_idx, batch_size):
-        self.pred_fun = pred_fun
-        self.reduce_fun = reduce_fun
-        self.task_idx = task_idx
-        self.batch_size = batch_size
+    def __init__(self):
+        raise NotImplementedError()
 
     def __call__(self, x):
-        """Return an in silico MAVE based on mutagenesis of 'x'.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Batch of one-hot sequences (shape: (L, A)).
-
-        Returns
-        -------
-        torch.Tensor
-            Batch of one-hot sequences with random augmentation applied.
-        """
         raise NotImplementedError()
 
 
@@ -35,11 +20,11 @@ class ScalarPredictor(BasePredictor):
     Parameters
     ----------
     pred_fun : built-in function
-        Function for returning model predictions from inputs.
+        Function for returning model predictions.
     task_idx : int
         Task index corresponding to a specific output head.
     batch_size : int
-        The number of predictions per batch during model inference.
+        The number of predictions per batch.
 
     Returns
     -------
@@ -55,7 +40,6 @@ class ScalarPredictor(BasePredictor):
 
     def __call__(self, x):
         pred = predict_in_batches(x, self.pred_fun, self.batch_size, **self.kwargs)
-        #return pred[:,self.task_idx][:,np.newaxis]
         return pred[self.task_idx]
 
 
@@ -66,13 +50,13 @@ class ProfilePredictor(BasePredictor):
     Parameters
     ----------
     pred_fun : function
-        Built-in function for accessing model inference on inputs.
+        Function for returning model predictions.
     task_idx : int
         Task index corresponding to a specific output head.
     batch_size : int
-        The number of predictions per batch during model inference.
+        The number of predictions per batch.
     reduce_fun : function
-        User-defined function for reducing profile prediction to scalar.
+        Function for reducing profile prediction to scalar.
 
     Returns
     -------
@@ -153,7 +137,7 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, **kwargs):
     Parameters
     ----------
     x : torch.Tensor
-        Batch of one-hot sequences (shape: (L, A)).
+        One-hot sequences (shape: (N, L, A)).
     model_pred_fun : function
         Built-in function for accessing model inference on inputs.
     batch_size : int
@@ -162,7 +146,7 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, **kwargs):
     Returns
     -------
     numpy.ndarray
-        Batch of predictions corresponding to inputs in 'x'.
+        Model predictions.
     """
 
     N, L, A = x.shape
