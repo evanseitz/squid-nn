@@ -35,8 +35,8 @@ def plot_y_hist(y_mut, save_dir=None):
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'mave_distribution.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig 
 
 
@@ -74,8 +74,8 @@ def plot_performance(model, info, save_dir=None):
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'mavenn_training.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig 
 
 
@@ -138,8 +138,8 @@ def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'additive_logo.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig 
 
 
@@ -191,8 +191,8 @@ def plot_pairwise_matrix(theta_lclc, view_window=None, alphabet=['A','C','G','T'
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'pairwise_matrix.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig 
 
 
@@ -231,8 +231,8 @@ def plot_y_vs_yhat(model, mave_df, save_dir=None):
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir,'mavenn_measure_yhat.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig 
     
     
@@ -279,8 +279,8 @@ def plot_y_vs_phi(model, mave_df, save_dir=None):
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'mavenn_measure_phi.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig 
 
 
@@ -313,8 +313,8 @@ def plot_eig_vals(vals, save_dir=None):
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'pca_eigvals.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig 
 
 
@@ -347,6 +347,6 @@ def plot_eig_vecs(U, v1, v2, save_dir=None):
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'pca_eigvecs.png'), facecolor='w', dpi=200)
         plt.close()
-    else:
-        plt.show()
+    #else:
+        #plt.show()
     return fig
