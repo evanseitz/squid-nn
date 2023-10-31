@@ -12,10 +12,6 @@ of ``num_sim`` mutagenized sequences. Next, ``squid.predictor`` is called
 to run inference for each sequence in the ensemble, altogether forming
 a MAVE dataset containing ``num_sim`` sequence–function pairs.
 
-.. autoclass:: squid.mutagenizer
-    :members: apply_mut_by_seq_index
-.. autoclass:: squid.predictor
-    :members: prediction_in_batches, profile_sum, profile_pca
 
 Mutagenesis
 -----------
@@ -23,14 +19,13 @@ Mutagenesis
 The ``squid.mutagenizer`` class contains functions to generate an *in silico*
 dataset by randomly mutating an input sequence-of-interest.
 
-.. autoclass:: squid.mutagenizer
-    :members: apply_mut_by_seq_index
-
 
 Inference
 ---------
 
 The ``squid.predictor`` class...
 
-
-
+.. autoclass:: squid.impress
+    :members: plot_y_hist, plot_performance, plot_additive_logo, 
+        plot_pairwise_matrix, plot_y_vs_yhat, plot_y_vs_phi,
+        plot_eig_vals, plot_eig_vecs

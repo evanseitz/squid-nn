@@ -3,17 +3,12 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-import os
-import sys
+import os, sys
+#sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
-
-import sys
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -21,31 +16,41 @@ import sys
 project = 'squid'
 copyright = '2023, Evan Seitz, David McCandlish, Justin Kinney, Peter Koo'
 author = 'Evan Seitz, David McCandlish, Justin Kinney, Peter Koo'
-
 release = '0.1'
-version = '0.1.5'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-]
+#extensions = [
+ #   'sphinx.ext.duration',
+  #  'sphinx.ext.doctest',
+   # 'sphinx.ext.autodoc',
+    #'sphinx.ext.autosummary',
+    #'sphinx.ext.intersphinx',
+    #'sphinx.ext.todo',
+    #'sphinx.ext.viewcode',
+#]
+
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.doctest',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.todo',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.inheritance_diagram',
+              'sphinx.ext.autosummary',
+              'sphinxcontrib-programoutput'
+              ]
 
 # Internationalization.
 language = "en"
 
 # AutoAPI options.
 autoapi_type = "python"
-autoapi_dirs = ["../squid-nn"]
+autoapi_dirs = ["../squid"]
 autoapi_options = [
     "members",
     "undoc-members",
-    # "private-members",
     "show-inheritance",
     "show-module-summary",
     "special-members",
@@ -54,6 +59,16 @@ autoapi_options = [
 autoapi_ignore = ["*cli*", "*__main__.py"]
 
 templates_path = ["_templates"]
+
+# The suffix(es) of source filenames.
+# You can specify multiple suffix as a list of string:
+#
+# source_suffix = ['.rst', '.md']
+source_suffix = '.rst'
+
+# The master toctree document.
+master_doc = 'index'
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
@@ -67,12 +82,11 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_rtd_theme' #'alabaster'
 html_static_path = ['_static']
+
 html_logo = 'logo_light.png'
 html_theme_options = {
     'logo_only': True,
