@@ -1,4 +1,5 @@
 import numpy as np
+import tqdm
 
 
 class BaseMutagenesis:
@@ -101,7 +102,7 @@ def apply_mut_by_seq_index(x_index, shape, num_muts):
     one_hot = np.zeros((num_sim, L, A))
 
     # loop through and generate random mutagenesis
-    for i, num_mut in enumerate(num_muts):
+    for i, num_mut in enumerate(tqdm(num_muts)):
 
         if i == 0: #keep wild-type sequence
             one_hot[i,:,:] = np.eye(A)[x_index]
