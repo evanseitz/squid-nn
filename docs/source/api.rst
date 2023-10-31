@@ -23,7 +23,7 @@ dataset by randomly mutating an input sequence-of-interest.
 Inference
 ---------
 
-The ``squid.predictor`` class...
+The ``squid.predictor`` class... testing.
 
 .. autoclass:: squid.impress
     :members: plot_y_hist, plot_performance, plot_additive_logo, 
