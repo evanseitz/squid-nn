@@ -153,7 +153,7 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, **kwargs):
     N, L, A = x.shape
     num_batches = np.floor(N/batch_size).astype(int)
     pred = []
-    for i in tqdm(range(num_batches)):
+    for i in tqdm(range(num_batches), desc="Predictions"):
         pred.append(model_pred_fun(x[i*batch_size:(i+1)*batch_size], **kwargs))
     if num_batches*batch_size < N:
         pred.append(model_pred_fun(x[num_batches*batch_size:], **kwargs))
