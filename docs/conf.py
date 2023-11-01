@@ -90,34 +90,34 @@ html_theme = 'sphinx_rtd_theme' #"pydata_sphinx_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-#html_logo = 'logo_light.png'
-#html_theme_options = {
-#    'logo_only': True,
-#    'display_version': False,
-#}
+html_logo = 'logo_light.png'
+html_theme_options = {
+    'logo_only': True,
+    'display_version': False,
+}
 
 # Many of these options are copied directly from pydata-sphinx-theme's conf.py.
-html_theme_options = {
-    "logo": {
-        "text": "SQUID",
-        "image_light": "_static/logo_light.png",
-        "image_dark": "_static/logo_light.png",
-        "alt_text": "SQUID Logo",
-    },
-    "use_edit_page_button": True,
-    "show_toc_level": 1,
-    "navbar_align": "left",
-    "github_url": "https://github.com/evanseitz/squid-nn",
-    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
-    "show_version_warning_banner": True,
+#html_theme_options = {
+#    "logo": {
+#        "text": "SQUID",
+#        "image_light": "_static/logo_light.png",
+#        "image_dark": "_static/logo_light.png",
+#        "alt_text": "SQUID Logo",
+#    },
+#    "use_edit_page_button": True,
+#    "show_toc_level": 1,
+#    "navbar_align": "left",
+#    "github_url": "https://github.com/evanseitz/squid-nn",
+#    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
+#    "show_version_warning_banner": True,
     ###"switcher": {
         ###"json_url": json_url,
         ###"version_match": version_match,
     ###},
-    "external_links": [
-        {"name": "GitHub Repository", "url": "https://github.com/evanseitz/squid-nn"},
-    ],
-    "header_links_before_dropdown": 6,
-}
+#    "external_links": [
+#        {"name": "GitHub Repository", "url": "https://github.com/evanseitz/squid-nn"},
+#    ],
+#    "header_links_before_dropdown": 6,
+#}
 
-html_favicon = "_static/logo_light.png"
+#html_favicon = "_static/logo_light.png"
