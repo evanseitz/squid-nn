@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import os
-import squid
+#import squid
 
 project = 'squid'
 copyright = '2023, Evan Seitz, David McCandlish, Justin Kinney, Peter Koo'
