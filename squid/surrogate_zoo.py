@@ -33,8 +33,7 @@ class SurrogateLinear(SurrogateBase):
 
     Returns
     -------
-    keras.Model
-        
+    keras.Model  
     """
     def __init__(self, input_shape, num_tasks, l1=1e-8, l2=1e-4,
                  alphabet=['A','C','G','T']):
@@ -61,8 +60,9 @@ class SurrogateLinear(SurrogateBase):
 
     def train(self, x, y, learning_rate=1e-3, epochs=500, batch_size=100, early_stopping=True,
               patience=25, restore_best_weights=True, rnd_seed=None, save_dir=None, verbose=1):
-        """Train linear surrogate model."""
-
+        """Train linear surrogate model.
+        
+        """
         # generate data splits
         train_index, valid_index, test_index = data_splits(x.shape[0], test_split=0.1, valid_split=0.1, rnd_seed=rnd_seed)
         x_train = x[train_index]
@@ -84,20 +84,20 @@ class SurrogateLinear(SurrogateBase):
 
         # reduce learning rate callback
         reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss',
-                                                        factor=0.2,
-                                                        patience=3,
-                                                        min_lr=1e-7,
-                                                        mode='min',
-                                                        verbose=verbose)
+                                                      factor=0.2,
+                                                      patience=3,
+                                                      min_lr=1e-7,
+                                                      mode='min',
+                                                      verbose=verbose)
 
         # fit model to data
         history = self.model.fit(x_train, y_train,
-                            epochs=epochs,
-                            batch_size=batch_size,
-                            shuffle=True,
-                            validation_data=(x_valid, y_valid),
-                            callbacks=[es_callback, reduce_lr],
-                            verbose=verbose)
+                                 epochs=epochs,
+                                 batch_size=batch_size,
+                                 shuffle=True,
+                                 validation_data=(x_valid, y_valid),
+                                 callbacks=[es_callback, reduce_lr],
+                                 verbose=verbose)
         
         if save_dir is not None:
             self.model.save(os.path.join(save_dir, 'linear_model'))
@@ -106,8 +106,8 @@ class SurrogateLinear(SurrogateBase):
 
 
     def get_params(self, gauge=None, save_dir=None):
-        """Get parameters of the model."""
-        
+        """Get parameters of the model.
+        """
         for layer in self.model.layers:
             weights = layer.get_weights()
 
@@ -332,7 +332,6 @@ class SurrogateMAVENN(SurrogateBase):
         I_pred : float
             MAVE-NN estimated variational information (I_pred), in bits.
         """
-
         # compute predictive information on test data
         if self.regression_type == 'MPA':
             I_pred, dI_pred = self.model.I_predictive(x=self.test_df['x'], y=self.test_df[self.y_cols])
@@ -386,7 +385,6 @@ class SurrogateMAVENN(SurrogateBase):
             theta_lclc  :   numpy.ndarray
                 Pairwise terms in trained parameters (shape : (L,C,L,C)), if gpmap is 'pairwise'.
         """
-
         # fix gauge mode for model representation
         self.theta_dict = self.model.get_theta(gauge=gauge) #for usage: theta_dict.keys()
         
@@ -426,7 +424,6 @@ class SurrogateMAVENN(SurrogateBase):
         additive_logo : numpy.ndarray
             Additive logo parameters (shape : ('full_length',C)).
         """
-
         # insert the (potentially-delimited) additive logo back into the max-length sequence
         if full_length is None:
             full_length = self.L
@@ -441,8 +438,7 @@ class SurrogateMAVENN(SurrogateBase):
 
 
 def data_splits(N, test_split, valid_split, rnd_seed=None):
-    """Function to determine which sequences randomly split into 
-        train, validation, test set.
+    """Function to determine which sequences randomly split into train, validation, test set.
 
     Parameters
     ----------

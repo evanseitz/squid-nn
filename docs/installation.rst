@@ -8,7 +8,7 @@ SQUID
 
 To install SQUID, use the ``pip`` package manager via the command line: ::
 
-    $ pip install squid-nn
+    (.venv) $ pip install squid-nn
 
 Alternatively, you can clone SQUID from
 `GitHub <https://github.com/evanseitz/squid-nn>`_
@@ -45,3 +45,11 @@ Users will need to create separate environments in this case:
 
     1.  Tensorflow 1.x and Python 2.x environment for generating *in silico* MAVE data
     2.  Tensorflow 2.x and Python 3.x environment for training MAVE-NN models
+
+
+Example
+-------
+
+>>> import squid
+>>> import logomaker
+>>> import mavenn

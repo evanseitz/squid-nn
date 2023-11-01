@@ -24,8 +24,6 @@ or Justin Kinney (`Email: jkinney@cshl.edu <jkinney@cshl.edu>`_, `Twitter: @jbki
 
     installation
     tutorials
-    datasets
-    math
     api
 
 Links

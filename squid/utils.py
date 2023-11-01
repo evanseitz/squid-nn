@@ -18,7 +18,6 @@ def arr2pd(x, alphabet=['A','C','G','T']):
     x : pandas.dataframe
         Dataframe corresponding to the input array.
     """
-    
     labels = {}
     idx = 0
     for i in alphabet:
@@ -30,8 +29,7 @@ def arr2pd(x, alphabet=['A','C','G','T']):
 
 
 def oh2seq(one_hot, alphabet=['A','C','G','T']):
-    """
-    Function to convert one-hot encoding to a sequence.
+    """Function to convert one-hot encoding to a sequence.
 
     Parameters
     ----------
@@ -46,7 +44,6 @@ def oh2seq(one_hot, alphabet=['A','C','G','T']):
     seq : string
         Input sequence with length L.
     """
-    
     seq = []
     for i in range(np.shape(one_hot)[0]):
         for j in range(len(alphabet)):
@@ -57,8 +54,7 @@ def oh2seq(one_hot, alphabet=['A','C','G','T']):
 
 
 def seq2oh(seq, alphabet=['A','C','G','T']):
-    """
-    Function to convert a sequence to one-hot encoding.
+    """Function to convert a sequence to one-hot encoding.
 
     Parameters
     ----------
@@ -73,7 +69,6 @@ def seq2oh(seq, alphabet=['A','C','G','T']):
     one_hot : numpy.ndarray
         One-hot encoding corresponding to input sequence (shape : (L,C)).
     """
-    
     L = len(seq)
     one_hot = np.zeros(shape=(L,len(alphabet)), dtype=np.float32)
     for idx, i in enumerate(seq):
@@ -109,7 +104,6 @@ def fix_gauge(x, gauge, wt=None, r=None):
     OH : numpy.ndarray
         Gauge-fixed one-hot encoding corresponding to input sequence (shape : (L,C)).
     """
-
     x1 = x.copy()
 
     if gauge == 'empirical':
