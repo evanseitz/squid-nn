@@ -50,6 +50,9 @@ Users will need to create separate environments in this case:
 Example
 -------
 
+.. doctest::
+    :options: +SKIP
+
 >>> import squid
 >>> import logomaker
 >>> import mavenn
@@ -85,16 +88,16 @@ Example
 >>>
 >>> # MAVE-NN model with GE nonlinearity
 >>> surrogate_model = squid.surrogate_zoo.SurrogateMAVENN(x_mut.shape, num_tasks=y_mut.shape[1],
-                                                >>> gpmap=gpmap, regression_type='GE',
-                                                >>> linearity='nonlinear', noise='SkewedT',
-                                                >>> noise_order=2, reg_strength=0.1,
-                                                >>> alphabet=alphabet, deduplicate=True,
-                                                >>> gpu=True)
+                                                          gpmap=gpmap, regression_type='GE',
+                                                          linearity='nonlinear', noise='SkewedT',
+                                                          noise_order=2, reg_strength=0.1,
+                                                          alphabet=alphabet, deduplicate=True,
+                                                          gpu=True)
 >>>
 >>> # train surrogate model
 >>> surrogate, mave_df = surrogate_model.train(x_mut, y_mut, learning_rate=5e-4, epochs=500, batch_size=100,
-                                           >>> early_stopping=True, patience=25, restore_best_weights=True,
-                                           >>> save_dir=None, verbose=1)
+                                               early_stopping=True, patience=25, restore_best_weights=True,
+                                               save_dir=None, verbose=1)
 >>>
 >>> # retrieve model parameters
 >>> params = surrogate_model.get_params(gauge='empirical')
