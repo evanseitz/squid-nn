@@ -7,7 +7,6 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import os
-#import squid
 
 project = 'squid'
 copyright = '2023, Evan Seitz, David McCandlish, Justin Kinney, Peter Koo'
@@ -61,27 +60,6 @@ html_context = {
     "doc_path": "docs",
 }
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-# Define the json_url for our version switcher.
-###json_url = "https://squid-nn.readthedocs.io/en/latest/_static/switcher.json"
-
-# Copied (with love) from conf.py of pydata-sphinx-theme.
-# Define the version we use for matching in the version switcher.
-###version_match = os.environ.get("READTHEDOCS_VERSION")
-# If READTHEDOCS_VERSION doesn't exist, we're not on RTD
-# If it is an integer, we're in a PR build and the version isn't correct.
-###if not version_match or version_match.isdigit():
-    # For local development, infer the version to match from the package.
-    ###release = wsinfer.__version__
-    ###if "dev" in release or "rc" in release:
-        ###version_match = "dev"
-        # We want to keep the relative reference if we are in dev mode
-        # but we want the whole url if we are effectively in a released version
-        ###json_url = "_static/switcher.json"
-    ###else:
-        ###version_match = "v" + release
 
 html_theme = 'sphinx_rtd_theme' #"pydata_sphinx_theme"
 
