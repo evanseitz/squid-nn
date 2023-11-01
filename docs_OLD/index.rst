@@ -4,11 +4,6 @@ SQUID: interpreting sequence-based deep learning models for regulatory genomics
 **SQUID** [#Seitz2023]_ (Surrogate Quantitative Interpretability for Deepnets) 
 is a Python suite to interpret sequence-based deep learning models for 
 regulatory genomics data with domain-specific surrogate models.
-
-.. note::
-
-  This guide is under developement.
-
 To learn more about this approach, please see our manuscript:
 
 .. [#Seitz2023] Seitz E, McCandlish D, Kinney J, Koo P.
@@ -38,4 +33,3 @@ Links
 - `Koo Lab <https://koolab.cshl.edu/>`_
 - `Kinney Lab <http://kinneylab.labsites.cshl.edu/>`_
 - `Cold Spring Harbor Laboratory <https://www.cshl.edu/>`_
-* :ref:`search`
