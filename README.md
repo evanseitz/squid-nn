@@ -48,11 +48,11 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 
 - **Examples in Google Colab**:
 
-	- Additive analysis with DeepSTARR: https://colab.research.google.com/drive/12HR8Vu_8ji3Ac1wli4wgqx1J0YB73JF_?usp=sharing
+	- [Additive surrogate modeling](https://colab.research.google.com/drive/12HR8Vu_8ji3Ac1wli4wgqx1J0YB73JF_?usp=sharing)
 
-	- Pairwise analysis with ResidualBind-32: https://colab.research.google.com/drive/1eKC78YE2l49mQFOlnA9Xr1Y9IO121Va5?usp=sharing
+	- [Pairwise surrogate modeling](https://colab.research.google.com/drive/1eKC78YE2l49mQFOlnA9Xr1Y9IO121Va5?usp=sharing)
 	
-	- Variant effect analysis with Kipoi model: https://colab.research.google.com/drive/1wtpT1FF5nu1etTDOaV3A7ByXhuLqK071?usp=sharing
+	- [Variant effect analysis](https://colab.research.google.com/drive/1wtpT1FF5nu1etTDOaV3A7ByXhuLqK071?usp=sharing)
 	
 - **Examples in Python**: 
 

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="squid-nn",
-    version="0.2.2",
+    version="0.2.3",
     author="Evan Seitz",
     author_email="evan.e.seitz@gmail.com",
     packages=find_packages(),
@@ -13,5 +13,7 @@ setup(
         'Operating System :: OS Independent',
     ],
     python_requires=">=3.7",
-    install_requires=[tqdm],
+    install_requires=[
+        'tqdm',
+    ],
 )
