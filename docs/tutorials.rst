@@ -1,7 +1,9 @@
+.. _tutorials:
+
 Modeling Tutorials
 ===================
 
-Examples of applying SQUID on previously-released models can be found in the following notebooks:
+Examples of applying SQUID on previously-released models can be found in the following notebooks
 
 .. toctree::
     :maxdepth: 1
