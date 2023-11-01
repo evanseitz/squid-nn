@@ -38,7 +38,7 @@ MAVE-NN models and related visualization tools require additional dependencies: 
     $ pip install mavenn
     $ pip install mavenn --upgrade
 
-Please see the `MAVENN <https://mavenn.readthedocs.io>`_ documentation for more information.
+Please see the `MAVE-NN <https://mavenn.readthedocs.io>`_ documentation for more information.
 
 For older DNNs that require inference via Tensorflow 1.x, Python 2.x is required which is not supported by MAVE-NN. 
 Users will need to create separate environments in this case:
