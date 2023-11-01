@@ -23,7 +23,7 @@ which you use SQUID: ::
 
     # Insert local path to SQUID at beginning of Python's path
     import sys
-    sys.path.insert(0, 'appropriate_directory/squid')
+    sys.path.insert(0, 'appropriate_directory/squid-nn')
 
     # Load squid
     import squid
