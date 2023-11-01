@@ -71,7 +71,8 @@ Example
     model = kipoi.get_model('DeepSTARR')
 
     # define how to go from kipoi prediction to scalar
-    kipoi_predictor = squid.predictor.ScalarPredictor(model.predict_on_batch, task_idx=task_idx, batch_size=512)
+    kipoi_predictor = squid.predictor.ScalarPredictor(model.predict_on_batch,
+                                                      task_idx=task_idx, batch_size=512)
 
     # set up mutagenizer class for in silico MAVE
     mut_generator = squid.mutagenizer.RandomMutagenesis(mut_rate=0.1, uniform=False)
@@ -80,7 +81,9 @@ Example
     seq_length = len(x)
     mut_window = [0, seq_length] #interval in sequence to mutagenize
     num_sim = 20000 #number of sequence to simulate
-    mave = squid.mave.InSilicoMAVE(mut_generator, mut_predictor=kipoi_predictor, seq_length=seq_length, mut_window=mut_window)
+    mave = squid.mave.InSilicoMAVE(mut_generator, mut_predictor=kipoi_predictor,
+                                   seq_length=seq_length, mut_window=mut_window)
+
     x_mut, y_mut = mave.generate(x, num_sim=num_sim)
 
     # choose surrogate model type
@@ -112,4 +115,5 @@ Example
     variant_effect_df = squid.utils.arr2pd(variant_effect, alphabet)
 
     # plot additive logo in wildtype gauge
-    fig = squid.impress.plot_additive_logo(variant_effect, center=False, view_window=mut_window, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)
+    fig = squid.impress.plot_additive_logo(variant_effect, center=False, view_window=mut_window,
+                                           alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)
