@@ -11,7 +11,7 @@ To install SQUID, use the ``pip`` package manager via the command line: ::
     $ pip install squid-nn
 
 Alternatively, you can clone SQUID from
-`GitHub <https://github.com/evanseitz/squid-nn>`_ 
+`GitHub <https://github.com/evanseitz/squid-nn>`_
 using the command line: ::
 
     $ cd appropriate_directory
