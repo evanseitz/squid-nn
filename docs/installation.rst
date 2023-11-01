@@ -50,16 +50,17 @@ Users will need to create separate environments in this case:
 Example
 -------
 
-.. doctest::
-    :options: +SKIP
+.. code-block:: python
 
->>> import squid
->>> import logomaker
->>> import mavenn
->>> import kipoi
->>>
->>> task_idx = 0 #deepstarr task index (either 0 Dev or 1 HK)
->>> alphabet = ['A','C','G','T']
+    import squid
+    import logomaker
+    import mavenn
+    import kipoi
+
+
+    task_idx = 0 #deepstarr task index (either 0 Dev or 1 HK)
+    alphabet = ['A','C','G','T']
+    
 >>>
 >>> # define sequence of interest
 >>> seq = 'GGCTCTGTCTCAGTTTCTGATTCAGTTTCGGATCCACTTCGAGAGGCAGAAGTCGGGGTCCGAGAGGCATTAGCTTGTTAGTTCTACAACCTGCTGGCAAATGTGCCAATATGTTTGCACGCTGATAAGGCCTACATGGCACCGAATTGAAAACCGCTTACATAATGAAGTGAATAGTCAGCGAATCGGCAGAGCAACCGCAATGCATTGCATTCACCATCGCGAATAATCAGATTCAAGGCAACGATC'

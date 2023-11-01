@@ -4,7 +4,6 @@ Demonstration of how to use SQUID with example Kipoi model (DeepSTARR)
 
 import os, sys
 sys.dont_write_bytecode = True
-import numpy as np
 import mavenn
 import squid
 import kipoi
@@ -77,7 +76,7 @@ params = surrogate_model.get_params(gauge='empirical')
 # generate sequence logo
 logo = surrogate_model.get_logo(mut_window=mut_window, full_length=seq_length)
 
-# Fix gauge for variant effect prediction
+# fix gauge for variant effect prediction
 variant_effect = squid.utils.fix_gauge(logo, gauge='wildtype', wt=x_mut[0])
 
 # save variant effects to pandas
