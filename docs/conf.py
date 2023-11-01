@@ -21,7 +21,7 @@ extensions = [
     "sphinx.ext.intersphinx",  # for links
     "sphinx.ext.napoleon",  # for google style docstrings
     "sphinx.ext.viewcode",  # add links to code
-    "autoapi.extension",  # to document the wsinfer api
+    "autoapi.extension",  # to document the squid api
     "sphinx_click",  # to document click command line
     "sphinx_copybutton",  # add copy button to top-right of code blocks
 ]
@@ -96,28 +96,43 @@ html_theme_options = {
     'display_version': False,
 }
 
-# Many of these options are copied directly from pydata-sphinx-theme's conf.py.
-#html_theme_options = {
-#    "logo": {
-#        "text": "SQUID",
-#        "image_light": "_static/logo_light.png",
-#        "image_dark": "_static/logo_light.png",
-#        "alt_text": "SQUID Logo",
-#    },
-#    "use_edit_page_button": True,
-#    "show_toc_level": 1,
-#    "navbar_align": "left",
-#    "github_url": "https://github.com/evanseitz/squid-nn",
-#    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
-#    "show_version_warning_banner": True,
-    ###"switcher": {
-        ###"json_url": json_url,
-        ###"version_match": version_match,
-    ###},
-#    "external_links": [
-#        {"name": "GitHub Repository", "url": "https://github.com/evanseitz/squid-nn"},
-#    ],
-#    "header_links_before_dropdown": 6,
-#}
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+
+html_theme_options = {
+    'canonical_url': 'https://squid-nn.readthedocs.io',
+    #'analytics_id': 'UA-XXXXXXX-1',  #  Provided by Google in your dashboard
+    'logo_only': True,
+    'display_version': True,
+    'prev_next_buttons_location': 'none', #'bottom',
+    'style_external_links': False,
+    #'vcs_pageview_mode': '',
+    'style_nav_header_background': 'white',
+    # Toc options
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': 3,
+    'includehidden': True,
+    'titles_only': False
+}
+
+# -- Options for HTMLHelp output ---------------------------------------------
+
+# Output file base name for HTML help builder.
+htmlhelp_basename = 'squiddoc'
+
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
+}
+intersphinx_disabled_domains = ['std']
+
+templates_path = ['_templates']
+
+
+# -- Options for EPUB output
+epub_show_urls = 'footnote'
 
 #html_favicon = "_static/logo_light.png"
