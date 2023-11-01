@@ -17,9 +17,6 @@ or to report bugs, please contact Evan Seitz (`Email: seitz@cshl.edu <seitz@cshl
 For more general correspondence, please contact Peter Koo  (`Email: koo@cshl.edu <jkinney@cshl.edu>`_, `Twitter: @pkoo562 <https://twitter.com/pkoo562>`_) 
 or Justin Kinney (`Email: jkinney@cshl.edu <jkinney@cshl.edu>`_, `Twitter: @jbkinney <https://twitter.com/jbkinney>`_).
 
-.. note::
-
-  This guide is under developement.
 
 .. toctree::
     :maxdepth: 2
@@ -37,4 +34,8 @@ Links
 - `Koo Lab <https://koolab.cshl.edu/>`_
 - `Kinney Lab <http://kinneylab.labsites.cshl.edu/>`_
 - `Cold Spring Harbor Laboratory <https://www.cshl.edu/>`_
-* :ref:`search`
+
+
+.. note::
+
+  This guide is under developement.
