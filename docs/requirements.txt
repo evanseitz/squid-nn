@@ -13,5 +13,6 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.9
 readthedocs-sphinx-search==0.1.1
+numpydoc==1.4.0
 nbsphinx==0.9.3
 pypandoc
