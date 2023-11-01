@@ -23,7 +23,12 @@ extensions = [
     "autoapi.extension",  # to document the squid api
     "sphinx_click",  # to document click command line
     "sphinx_copybutton",  # add copy button to top-right of code blocks
+    "numpydoc", # support for the Numpy docstring format
+    "nbsphinx", # required for reading jupyter notebooks
 ]
+
+# Do NOT automatically execute notebooks when building.
+nbsphinx_execute = 'never'
 
 # Internationalization.
 language = "en"

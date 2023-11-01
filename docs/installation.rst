@@ -8,7 +8,7 @@ SQUID
 
 To install SQUID, use the ``pip`` package manager via the command line: ::
 
-    (.venv) $ pip install squid-nn
+    $ pip install squid-nn
 
 Alternatively, you can clone SQUID from
 `GitHub <https://github.com/evanseitz/squid-nn>`_
@@ -25,7 +25,7 @@ which you use SQUID: ::
     import sys
     sys.path.insert(0, 'appropriate_directory/squid')
 
-    #Load squid
+    # Load squid
     import squid
 
 
