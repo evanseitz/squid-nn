@@ -48,6 +48,7 @@ autoapi_options = [
 autoapi_ignore = ["*cli*", "*__main__.py"]
 
 templates_path = ["_templates"]
+autoapi_template_dir = "_templates/autoapi"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 intersphinx_mapping = {
