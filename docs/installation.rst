@@ -6,11 +6,11 @@ Installation Instructions
 SQUID
 -----
 
-To install SQUID, first create a new ``conda`` environment via the command line: ::
+To install SQUID, first create a new Anaconda environment via the command line: ::
 
-    $ conda create --name squid python==3.7
+    $ conda create --name squid python==3.7.2
 
-Next, activate this environment via ``conda activate squid``, and ``pip`` install the following package: ::
+Next, activate this environment via ``conda activate squid``, and install the following package: ::
 
     $ pip install squid-nn
 
