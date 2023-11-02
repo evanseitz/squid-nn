@@ -1,7 +1,7 @@
 API Reference
 =============
 
-The following section contains auto-generated API reference documentation [#f1]_.
+The following section contains auto-generated API reference documentation [#f1]_. TEST
 
 .. toctree::
    :titlesonly:
@@ -18,4 +18,4 @@ The following section contains auto-generated API reference documentation [#f1]_
 An API flowchart is provided below, showing the flow of information between
 separate modules in the SQUID Python pipeline.
 
-
+.. image:: /api_flowchart.png
