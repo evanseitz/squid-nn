@@ -19,18 +19,28 @@ SQUID: interpreting sequence-based deep learning models for regulatory genomics
 
 ## Install:
 
+With [Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) sourced, create a new environment for SQUID:
+
 ```bash
-pip install squid-nn
+conda create --name squid python==3.7
 ```
 
-## Dependencies:
+Next, activate this environment via `conda activate squid`, and install the following packages:
 
 ```bash
+pip install squid-nn
 pip install logomaker
 pip install mavenn --upgrade
 ```
 
+Finally, when you are done using the environment, always exit via `conda deactivate`.
+
+
 ### Notes
+
+If you have any issues installing SQUID, please see:
+- https://squid-nn.readthedocs.io/en/latest/installation.html
+- https://github.com/evanseitz/squid-nn/issues
 
 For issues installing MAVE-NN, please see:
 - https://mavenn.readthedocs.io/en/latest/installation.html
@@ -59,6 +69,13 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 	- The script `testing/squid_testing.py` contains code for locally running the variant effect analysis (above) and exporting outputs to file
 
 	- The `squid-manuscript` repository contains examples to reproduce results in the manuscript, including the application of SQUID on other DNNs such as ENFORMER: https://github.com/evanseitz/squid-manuscript
+	
+If running `testing/sequid_testing.py`, additional dependencies are required:
+
+```bash
+pip install kipoi --upgrade
+pip install kipoiseq --upgrade
+```
 
 
 ## Citation:
