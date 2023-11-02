@@ -72,7 +72,7 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 		pip install kipoiseq --upgrade
 		```
 
-	- The `squid-manuscript` repository contains examples to reproduce results in the manuscript, including the application of SQUID on other DNNs such as ENFORMER: https://github.com/evanseitz/squid-manuscript [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10047748.svg)](https://doi.org/10.5281/zenodo.10047748)
+	- The `squid-manuscript` repository contains examples to reproduce results in the manuscript, including the application of SQUID on other DNNs such as ENFORMER: https://github.com/evanseitz/squid-manuscript
 
 
 ## Citation:
