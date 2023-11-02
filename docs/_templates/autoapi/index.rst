@@ -1,7 +1,7 @@
 API Reference
 =============
 
-The following section contains auto-generated API reference documentation. [#f1]_
+This page contains auto-generated API reference documentation.
 
 .. toctree::
    :titlesonly:
@@ -11,8 +11,6 @@ The following section contains auto-generated API reference documentation. [#f1]
    {{ page.include_path }}
    {% endif %}
    {% endfor %}
-
-.. [#f1] Created with `sphinx-autoapi <https://github.com/readthedocs/sphinx-autoapi>`_
 
 
 An API flowchart is provided below, showing the flow of information between
