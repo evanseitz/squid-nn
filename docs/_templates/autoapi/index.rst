@@ -1,9 +1,6 @@
 API Reference
 =============
 
-TEST
------
-
 The following section contains auto-generated API reference documentation.[#f1]_
 
 .. toctree::
