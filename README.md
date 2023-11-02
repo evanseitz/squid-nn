@@ -19,7 +19,7 @@ SQUID: interpreting sequence-based deep learning models for regulatory genomics
 
 ## Install:
 
-With [Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) sourced, create a new environment for SQUID:
+With [Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) sourced, create a new environment via the command line:
 
 ```bash
 conda create --name squid python==3.7.2
