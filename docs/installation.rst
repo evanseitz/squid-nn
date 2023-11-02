@@ -59,7 +59,8 @@ The following example requires an activated ``squid`` environment loaded with tw
     $ pip install kipoi --upgrade
     $ pip install kipoi-seq --upgrade
 
-Next, copy the following code into a new script ``squid_example.py`` and run via ``python squid_example.py`` ::
+Next, copy the following code into a new script ``squid_example.py`` and run via ``python squid_example.py``. ::
+
 
 .. code-block:: python
 
