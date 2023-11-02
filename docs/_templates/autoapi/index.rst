@@ -18,5 +18,7 @@ The following section contains auto-generated API reference documentation.[#f1]_
 .. [#f1] Created with `sphinx-autoapi <https://github.com/readthedocs/sphinx-autoapi>`_
 
 
+A flowchart representing the SQUID code framework is provided below,
+showing the flow of information between separate modules in the SQUID Python pipeline.
 
-
+.. image:: api_flowchart.png
