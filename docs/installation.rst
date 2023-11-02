@@ -54,7 +54,11 @@ Users will need to create separate environments in this case:
 Example
 -------
 
-The following examples 
+The following example requires an activated ``squid`` environment loaded with additional dependencies: ::
+
+    $ pip install kipoi --upgrade
+    $ pip install kipoi-seq --upgrade
+
 
 .. code-block:: python
 
