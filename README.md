@@ -7,7 +7,7 @@ SQUID: interpreting sequence-based deep learning models for regulatory genomics
 <br/>
 
 ![logo_dark](./docs/_static/logo_dark.png#gh-dark-mode-only)
-![logo_light](./docs/_static/logo_light2.png#gh-light-mode-only)
+![logo_light](./docs/_static/logo_light.png#gh-light-mode-only)
 
 <br/>
 
