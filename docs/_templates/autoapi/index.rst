@@ -16,4 +16,4 @@ This page contains auto-generated API reference documentation.
 An API flowchart is provided below, showing the flow of information between
 separate modules in the SQUID Python pipeline.
 
-.. image:: /api_flowchart.png
+.. image:: /_static/api_flowchart.png

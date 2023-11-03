@@ -2,8 +2,8 @@
 Demonstration of how to use SQUID with example Kipoi model (DeepSTARR)
 
 For using kipoi models, the following packages must be installed:
-    >>> pip install kipoi
-    >>> pip install kipoiseq
+    >>> pip install kipoi --upgrade
+    >>> pip install kipoiseq --upgrade
 """
 
 import os, sys
