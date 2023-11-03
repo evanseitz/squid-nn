@@ -104,7 +104,7 @@ def apply_mut_by_seq_index(x_index, shape, num_muts):
     # loop through and generate random mutagenesis
     for i, num_mut in enumerate(tqdm(num_muts, desc="Mutagenesis")):
 
-        if i == 0: #keep wild-type sequence
+        if i == 0: # keep wild-type sequence
             one_hot[i,:,:] = np.eye(A)[x_index]
         else:
             # generate mutation index
