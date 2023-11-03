@@ -28,6 +28,7 @@ class InSilicoMAVE():
         else:
             self.start_position = 0
             self.stop_position = seq_length
+        self.context_agnostic = context_agnostic
 
 
     def generate(self, x, num_sim, seed=None, verbose=1):
@@ -59,7 +60,7 @@ class InSilicoMAVE():
         if self.mut_window is not None:
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
-            if context_agnostic:
+            if self.context_agnostic:
                 x_mut_full = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
             else:
                 x_mut_full = self.pad_seq(x_mut, x, self.start_position, self.stop_position)
