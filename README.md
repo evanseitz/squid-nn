@@ -66,7 +66,7 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 	
 - **Examples in Python**: 
 
-	- The script `testing/squid_testing.py` contains code for locally running the variant effect analysis (above) and exporting outputs to file. The additional dependencies are required:
+	- The script `testing/squid_testing.py` contains code for locally running the variant effect analysis (above) and exporting outputs to file. For this example, two additional dependencies are required:
 		```bash
 		pip install kipoi --upgrade
 		pip install kipoiseq --upgrade
