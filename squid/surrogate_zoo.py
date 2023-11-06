@@ -60,9 +60,8 @@ class SurrogateLinear(SurrogateBase):
 
     def train(self, x, y, learning_rate=1e-3, epochs=500, batch_size=100, early_stopping=True,
               patience=25, restore_best_weights=True, rnd_seed=None, save_dir=None, verbose=1):
-        """Train linear surrogate model.
-        
-        """
+        """Train linear surrogate model."""
+
         # generate data splits
         train_index, valid_index, test_index = data_splits(x.shape[0], test_split=0.1, valid_split=0.1, rnd_seed=rnd_seed)
         x_train = x[train_index]
@@ -106,12 +105,34 @@ class SurrogateLinear(SurrogateBase):
 
 
     def get_params(self, gauge=None, save_dir=None):
-        """Get parameters of the model.
+        """Function to return trained parameters from the linear model.
+
+        Parameters
+        ----------
+        save_dir : str
+            Directory for saving figures to file.
+        
+        Returns
+        -------
+        tuple 
+            theta_0     :   None
+                'None' to match output of MAVE-NN get_params()
+            theta_lc    :   numpy.ndarray
+                Additive terms in trained parameters (shape : (L,C)).
+            theta_lclc  :   None
+                'None' to match output of MAVE-NN get_params()
         """
+
         for layer in self.model.layers:
             weights = layer.get_weights()
 
-        return self.model.layers[2].get_weights()[0]
+        theta_lc = self.model.layers[2].get_weights()[0]
+        theta_lc = theta_lc.reshape((int(len(theta_lc)/len(self.alphabet)), len(self.alphabet)))
+
+        if save_dir is not None:
+            np.save(os.path.join(save_dir, 'theta_lc.npy'), theta_lc)
+
+        return (None, theta_lc, None)
     
 
     def get_logo(self, full_length=None, mut_window=None):
@@ -385,6 +406,7 @@ class SurrogateMAVENN(SurrogateBase):
             theta_lclc  :   numpy.ndarray
                 Pairwise terms in trained parameters (shape : (L,C,L,C)), if gpmap is 'pairwise'.
         """
+        
         # fix gauge mode for model representation
         self.theta_dict = self.model.get_theta(gauge=gauge) #for usage: theta_dict.keys()
         
