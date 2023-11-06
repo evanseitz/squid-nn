@@ -141,12 +141,13 @@ class SurrogateLinear(SurrogateBase):
         if full_length is None:
             full_length = self.L
         #additive_logo = self.theta_dict['logomaker_df']
-        additive_logo = self.get_params(self.model)
-        additive_logo.fillna(0, inplace=True) #if necessary, set NaN parameters to zero
+        additive_logo = self.get_params(self.model)[1]
+        #additive_logo.fillna(0, inplace=True) #if necessary, set NaN parameters to zero
         if mut_window is not None:
             additive_logo_zeros = np.zeros(shape=(full_length, self.A))
             additive_logo_zeros[mut_window[0]:mut_window[1], :] = additive_logo
             additive_logo = additive_logo_zeros
+
 
         return additive_logo
 
