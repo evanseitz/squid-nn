@@ -48,7 +48,7 @@ class SurrogateLinear(SurrogateBase):
         #N,L,A = input_shape
 
         # input layer
-        inputs = keras.layers.Input(shape=(L,A))
+        inputs = keras.layers.Input(shape=(self.L,self.A))
         flatten = keras.layers.Flatten()(inputs)
         outputs = keras.layers.Dense(num_tasks,
                                      activation='linear',
