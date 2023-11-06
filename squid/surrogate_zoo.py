@@ -40,11 +40,12 @@ class SurrogateLinear(SurrogateBase):
 
         self.model = self.build(input_shape, num_tasks, l1, l2)
         self.alphabet = alphabet
+        self.N, self.L, self.A = input_shape
 
     def build(self, input_shape, num_tasks, l1, l2):
         """Build linear surrogate model."""
         
-        N,L,A = input_shape
+        #N,L,A = input_shape
 
         # input layer
         inputs = keras.layers.Input(shape=(L,A))
@@ -127,7 +128,7 @@ class SurrogateLinear(SurrogateBase):
             weights = layer.get_weights()
 
         theta_lc = self.model.layers[2].get_weights()[0]
-        theta_lc = theta_lc.reshape((int(len(theta_lc)/len(self.alphabet)), len(self.alphabet)))
+        theta_lc = theta_lc.reshape((self.L, self.A))
 
         if save_dir is not None:
             np.save(os.path.join(save_dir, 'theta_lc.npy'), theta_lc)
