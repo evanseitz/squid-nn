@@ -40,12 +40,13 @@ class SurrogateLinear(SurrogateBase):
 
         self.model = self.build(input_shape, num_tasks, l1, l2)
         self.alphabet = alphabet
-        self.N, self.L, self.A = input_shape
+
 
     def build(self, input_shape, num_tasks, l1, l2):
         """Build linear surrogate model."""
         
         #N,L,A = input_shape
+        self.N, self.L, self.A = input_shape
 
         # input layer
         inputs = keras.layers.Input(shape=(self.L,self.A))
