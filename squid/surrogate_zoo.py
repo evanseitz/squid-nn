@@ -45,7 +45,6 @@ class SurrogateLinear(SurrogateBase):
     def build(self, input_shape, num_tasks, l1, l2):
         """Build linear surrogate model."""
         
-        #N,L,A = input_shape
         self.N, self.L, self.A = input_shape
 
         # input layer
@@ -144,14 +143,11 @@ class SurrogateLinear(SurrogateBase):
         # insert the (potentially-delimited) additive logo back into the max-length sequence
         if full_length is None:
             full_length = self.L
-        #additive_logo = self.theta_dict['logomaker_df']
         additive_logo = self.get_params(self.model)[1]
-        #additive_logo.fillna(0, inplace=True) #if necessary, set NaN parameters to zero
         if mut_window is not None:
             additive_logo_zeros = np.zeros(shape=(full_length, self.A))
             additive_logo_zeros[mut_window[0]:mut_window[1], :] = additive_logo
             additive_logo = additive_logo_zeros
-
 
         return additive_logo
 
@@ -237,7 +233,7 @@ class SurrogateMAVENN(SurrogateBase):
                 seq = ''.join(seq)
                 mave_df.at[i, 'x'] = seq
 
-        elif gpu is True: #convert entire matrix at once (~twice as fast as standard approach if running on GPUs)
+        elif gpu is True: # convert entire matrix at once (~twice as fast as standard approach if running on GPUs)
             seq_index_all = np.argmax(x, axis=-1)
             num2alpha = dict(zip(range(0, len(alphabet)), alphabet))
             seq_vector_all = np.vectorize(num2alpha.get)(seq_index_all)
