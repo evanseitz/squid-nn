@@ -111,6 +111,8 @@ class SurrogateLinear(SurrogateBase):
 
         Parameters
         ----------
+        gauge : None
+            None, to match output of MAVE-NN get_params()
         save_dir : str
             Directory for saving figures to file.
         
@@ -118,11 +120,11 @@ class SurrogateLinear(SurrogateBase):
         -------
         tuple 
             theta_0     :   None
-                'None' to match output of MAVE-NN get_params()
+                None, to match output of MAVE-NN get_params()
             theta_lc    :   numpy.ndarray
                 Additive terms in trained parameters (shape : (L,C)).
             theta_lclc  :   None
-                'None' to match output of MAVE-NN get_params()
+                None, to match output of MAVE-NN get_params()
         """
 
         for layer in self.model.layers:
