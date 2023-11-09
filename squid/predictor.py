@@ -84,31 +84,60 @@ class ProfilePredictor(BasePredictor):
 
 
 
-'''
-class BPNetPredictor(BasePredictor):
 
-    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun=np.sum, axis=1, strand='pos', **kwargs):
+class BPNetPredictor(BasePredictor):
+    """Module for handling BPNet (Kipoi) model predictions.
+
+    Parameters
+    ----------
+    pred_fun : function
+        Function for returning model predictions.
+    task_idx : int
+        Task index corresponding to a specific output head.
+    batch_size : int
+        The number of predictions per batch.
+    reduce_fun : function
+        Function for reducing profile prediction to scalar.
+
+    Returns
+    -------
+    torch.Tensor
+        Batch of scalar predictions corresponding to inputs.
+    """
+
+    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun='wn', axis=1, **kwargs):
         self.pred_fun = pred_fun
         self.task_idx = task_idx
         self.batch_size = batch_size
         self.reduce_fun = reduce_fun
         self.axis = axis
         self.kwargs = kwargs
-        if strand == 'pos':
-            self.strand = 0
-        else:
-            self.strand = 1
+
+        if self.reduce_fun == 'wn': # transformation used in the original BPNet paper
+            def contribution_score(preds):
+                pred_scalars = np.zeros(preds.shape[0])
+                import tensorflow as tf
+                graph = tf.Graph()
+                for pred_idx in tqdm(range(preds.shape[0]), desc='Compression'):
+                    pred = preds[pred_idx]
+                    with graph.as_default():
+                        wn = tf.reduce_mean(tf.reduce_sum(tf.stop_gradient(tf.nn.softmax(pred)) * pred, axis=-2), axis=-1)
+                    with tf.Session(graph=graph).as_default() as sess:
+                        pred_scalars[pred_idx] = float(wn.eval())              
+                return pred_scalars
+            
+            self.reduce_fun = contribution_score
+
 
     def __call__(self, x):
-
         # get model predictions (all tasks)
-        pred = predict_in_batches(x, self.pred_fun, self.batch_size, **self.kwargs)
+        pred = predict_in_batches(x, self.pred_fun, self.batch_size, self.task_idx, **self.kwargs)
 
         # reduce bpnet profile prediction to scalar across axis for a given task_idx
-        pred = pred[self.task_idx][0][:,self.strand]
-        pred = self.reduce_fun(pred, axis=self.axis)
+        pred = self.reduce_fun(pred)
+
         return pred[:,np.newaxis]
-'''
+
 
 
 
@@ -132,7 +161,7 @@ class CustomPredictor():
 ################################################################################
 
 
-def predict_in_batches(x, model_pred_fun, batch_size=None, **kwargs):
+def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwargs):
     """Function to compute model predictions in batch mode.
 
     Parameters
@@ -154,9 +183,16 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, **kwargs):
     num_batches = np.floor(N/batch_size).astype(int)
     pred = []
     for i in tqdm(range(num_batches), desc="Inference"):
-        pred.append(model_pred_fun(x[i*batch_size:(i+1)*batch_size], **kwargs))
+        p = model_pred_fun(x[i*batch_size:(i+1)*batch_size])
+        if task_idx is not None:
+            p = p[task_idx]
+        pred.append(p, **kwargs)
+
     if num_batches*batch_size < N:
-        pred.append(model_pred_fun(x[num_batches*batch_size:], **kwargs))
+        p = model_pred_fun(x[num_batches*batch_size:])
+        if task_idx is not None:
+            p = p[task_idx]
+        pred.append(p, **kwargs)
 
     try:
         preds = np.concatenate(pred, axis=1)

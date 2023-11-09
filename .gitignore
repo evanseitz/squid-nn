@@ -107,7 +107,7 @@ ENV/
 # mypy
 .mypy_cache/
 
-# testing
-testing/squid_testing_outputs
+# examples
+examples/outputs_*
 
 

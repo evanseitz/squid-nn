@@ -1,7 +1,7 @@
 """
-Demonstration of how to use SQUID with example Kipoi model (DeepSTARR)
+Demonstration of how to perform SQUID variant effect analysis with example Kipoi model (DeepSTARR)
 
-For using kipoi models, the following packages must be installed:
+For using Kipoi models, the following packages must be installed:
     >>> pip install kipoi --upgrade
     >>> pip install kipoiseq --upgrade
 """
@@ -26,14 +26,14 @@ save = True
 # =============================================================================
 if save:
     py_dir = os.path.dirname(os.path.abspath(__file__))
-    save_dir = os.path.join(py_dir, 'squid_testing_outputs')
+    save_dir = os.path.join(py_dir, 'outputs_variant_analysis')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 else:
     save_dir = None
 
 
-task_idx = 0 #deepstarr task index (either 0 Dev or 1 HK)
+task_idx = 0 # deepstarr task index (either 0 Dev or 1 HK)
 alphabet = ['A','C','G','T']
 
 # define sequence of interest
@@ -53,8 +53,8 @@ mut_generator = squid.mutagenizer.RandomMutagenesis(mut_rate=0.1, uniform=False)
 
 # generate in silico MAVE
 seq_length = len(x)
-mut_window = [0, seq_length] #interval in sequence to mutagenize
-num_sim = 20000 #number of sequence to simulate
+mut_window = [0, seq_length] # interval in sequence to mutagenize
+num_sim = 20000 # number of sequence to simulate
 mave = squid.mave.InSilicoMAVE(mut_generator, mut_predictor=kipoi_predictor, seq_length=seq_length, mut_window=mut_window)
 x_mut, y_mut = mave.generate(x, num_sim=num_sim)
 
