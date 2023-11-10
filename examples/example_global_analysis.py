@@ -22,7 +22,6 @@ sys.dont_write_bytecode = True
 # Computational settings
 # =============================================================================
 gpu = False
-save = True # required for BPNet with MAVE-NN analysis
 
 
 # =============================================================================
@@ -53,8 +52,6 @@ if 1: # STEP 1 (BPNet)
     sys.path.append(os.path.join(parent_dir, 'squid'))
     import utils, predictor, mutagenizer, mave # import squid modules manually
 
-
-
     # convert to one-hot
     x = utils.seq2oh(seq, alphabet)
 
@@ -70,7 +67,7 @@ if 1: # STEP 1 (BPNet)
     # generate in silico MAVE
     seq_length = len(x)
     mut_window = [0, seq_length] # interval in sequence to mutagenize
-    num_sim = 10000 # number of sequence to simulate
+    num_sim = 20000 # number of sequence to simulate
     mave = mave.InSilicoMAVE(mut_generator, mut_predictor=kipoi_predictor, seq_length=seq_length, mut_window=mut_window,
                              context_agnostic=True) # required for global analysis 
     x_mut, y_mut = mave.generate(x, num_sim=num_sim)
@@ -105,16 +102,34 @@ else: # STEP 2 (MAVE-NN)
     surrogate, mave_df = surrogate_model.train(x_mut, y_mut, learning_rate=5e-4, epochs=500, batch_size=100,
                                             early_stopping=True, patience=25, restore_best_weights=True,
                                             save_dir=None, verbose=1)
+    
+    # save mavenn model
+    surrogate.save(os.path.join(save_dir, 'surrogate_model'))
+
+    # save mave dataframe
+    mave_df.to_csv(os.path.join(save_dir, 'mave_dataframe.csv'))
 
     # retrieve model parameters
     params = surrogate_model.get_params(gauge='empirical')
 
     # generate sequence logo
     logo = surrogate_model.get_logo(mut_window=mut_window, full_length=seq_length)
-
     logo_df = squid.utils.arr2pd(logo, alphabet)
-    print(logo_df)
     logo_df.to_csv(os.path.join(save_dir, 'logo.csv'))
+
+    # evaluate model performance
+    trainval_df, test_df = mavenn.split_dataset(mave_df)
+    info = surrogate_model.get_info()
+    print(info)
+
+    # plot mavenn model performance
+    fig = squid.impress.plot_performance(surrogate, info=info, save_dir=save_dir)
+
+    # plot mavenn y versus yhat
+    fig = squid.impress.plot_y_vs_yhat(surrogate, mave_df=mave_df, save_dir=save_dir)
+
+    # plot mavenn y versus phi
+    fig = squid.impress.plot_y_vs_phi(surrogate, mave_df=mave_df, save_dir=save_dir)
 
     # plot additive logo in wildtype gauge
     fig = squid.impress.plot_additive_logo(logo, center=True, view_window=mut_window, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)

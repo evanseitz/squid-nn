@@ -78,7 +78,7 @@ def seq2oh(seq, alphabet=['A','C','G','T']):
     return one_hot
 
 
-def fix_gauge(x, gauge, wt=None, r=None):
+def fix_gauge(x, gauge, wt=None, r=0.1):
     """Function to fix the gauge for an attribution matrix.
 
     Parameters
@@ -97,7 +97,7 @@ def fix_gauge(x, gauge, wt=None, r=None):
         Wild-type sequence (one-hot encoding) for 'wildtype' or 'empirical' gauge (shape : (L,C)).
     r : float
         For 'empirical gauge', the probability of mutation used during generation of
-        in silico MAVE dataset (see 'mut_rate').
+        in silico MAVE dataset (should match user-defined 'mut_rate').
 
     Returns
     -------
