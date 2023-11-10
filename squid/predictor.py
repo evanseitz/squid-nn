@@ -116,9 +116,11 @@ class BPNetPredictor(BasePredictor):
         if self.reduce_fun == 'wn': # transformation used in the original BPNet paper
             def contribution_score(preds):
                 pred_scalars = np.zeros(preds.shape[0])
+                import os
+                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
                 import tensorflow as tf
-                graph = tf.Graph()
                 for pred_idx in tqdm(range(preds.shape[0]), desc='Compression'):
+                    graph = tf.Graph()
                     pred = preds[pred_idx]
                     with graph.as_default():
                         wn = tf.reduce_mean(tf.reduce_sum(tf.stop_gradient(tf.nn.softmax(pred)) * pred, axis=-2), axis=-1)

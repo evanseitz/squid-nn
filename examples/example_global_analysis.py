@@ -16,6 +16,9 @@ https://github.com/evanseitz/squid-manuscript/blob/main/examples/README_environm
 
 import os, sys
 sys.dont_write_bytecode = True
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import tensorflow as tf
+import numpy as np
 
 
 # =============================================================================
@@ -43,12 +46,11 @@ pattern = 'AGCCATCAA' # e.g., Nanog binding site
 
 start_pos = int(seq_length//2) # position of inserted pattern in background DNA
 seq = 'N'*int(seq_length//2) + pattern + ('N'*int(seq_length//2))[:-len(pattern)] # pad pattern with background sequence
-mut_window = [start_pos, start_pos+len(pattern)] # interval in sequence to mutagenize locally
+mut_window = [start_pos, start_pos+len(pattern)] # interval in sequence to mutagenize (locally)
 
 
-if 1: # STEP 1 (BPNet)
+if 0: # STEP 1 (BPNet)
     import kipoi
-    import numpy as np
     sys.path.append(os.path.join(parent_dir, 'squid'))
     import utils, predictor, mutagenizer, mave # import squid modules manually
 
@@ -59,24 +61,22 @@ if 1: # STEP 1 (BPNet)
     model = kipoi.get_model('BPNet-OSKN')
 
     # define how to go from kipoi prediction to scalar
-    kipoi_predictor = predictor.BPNetPredictor(model.predict_on_batch, task_idx=task_idx, batch_size=512)
+    bpnet_predictor = predictor.BPNetPredictor(model.predict_on_batch, task_idx=task_idx, batch_size=512)
 
     # set up mutagenizer class for in silico MAVE
     mut_generator = mutagenizer.RandomMutagenesis(mut_rate=0.1, uniform=False)
 
     # generate in silico MAVE
-    seq_length = len(x)
-    mut_window = [0, seq_length] # interval in sequence to mutagenize
     num_sim = 20000 # number of sequence to simulate
-    mave = mave.InSilicoMAVE(mut_generator, mut_predictor=kipoi_predictor, seq_length=seq_length, mut_window=mut_window,
+    mave = mave.InSilicoMAVE(mut_generator, mut_predictor=bpnet_predictor, seq_length=seq_length, mut_window=mut_window,
                              context_agnostic=True) # required for global analysis 
     x_mut, y_mut = mave.generate(x, num_sim=num_sim)
 
     # save in silico MAVE dataset for STEP 2
-    print('Saving in silico MAVE dataset...')
     np.save(os.path.join(save_dir, 'x_mut.npy'), x_mut)
     np.save(os.path.join(save_dir, 'y_mut.npy'), y_mut)
-    
+    print('In silico MAVE dataset saved.')
+
 
 else: # STEP 2 (MAVE-NN)
     import mavenn
@@ -113,7 +113,8 @@ else: # STEP 2 (MAVE-NN)
     params = surrogate_model.get_params(gauge='empirical')
 
     # generate sequence logo
-    logo = surrogate_model.get_logo(mut_window=mut_window, full_length=seq_length)
+    view_window = [start_pos-15, start_pos+len(pattern)+15]
+    logo = surrogate_model.get_logo(mut_window=view_window, full_length=seq_length)
     logo_df = squid.utils.arr2pd(logo, alphabet)
     logo_df.to_csv(os.path.join(save_dir, 'logo.csv'))
 
