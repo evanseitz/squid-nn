@@ -78,7 +78,7 @@ surrogate, mave_df = surrogate_model.train(x_mut, y_mut, learning_rate=5e-4, epo
 params = surrogate_model.get_params(gauge='empirical')
 
 # generate sequence logo
-logo = surrogate_model.get_logo(mut_window=mut_window, full_length=seq_length)
+logo = surrogate_model.get_logo(view_window=mut_window, full_length=seq_length)
 
 # fix gauge for variant effect prediction
 variant_effect = squid.utils.fix_gauge(logo, gauge='wildtype', wt=x_mut[0])

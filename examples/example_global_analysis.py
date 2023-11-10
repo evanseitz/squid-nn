@@ -49,7 +49,7 @@ seq = 'N'*int(seq_length//2) + pattern + ('N'*int(seq_length//2))[:-len(pattern)
 mut_window = [start_pos, start_pos+len(pattern)] # interval in sequence to mutagenize (locally)
 
 
-if 0: # STEP 1 (BPNet)
+if 1: # STEP 1 (BPNet)
     import kipoi
     sys.path.append(os.path.join(parent_dir, 'squid'))
     import utils, predictor, mutagenizer, mave # import squid modules manually

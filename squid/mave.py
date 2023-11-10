@@ -61,10 +61,10 @@ class InSilicoMAVE():
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
             if self.context_agnostic:
-                x_mut_full = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
+                x_mut = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
             else:
-                x_mut_full = self.pad_seq(x_mut, x, self.start_position, self.stop_position)
-            y_mut = self.mut_predictor(x_mut_full)
+                x_mut = self.pad_seq(x_mut, x, self.start_position, self.stop_position)
+            y_mut = self.mut_predictor(x_mut)
         else:
             x_mut = self.mut_generator(x, num_sim)
             y_mut = self.mut_predictor(x_mut)
@@ -124,7 +124,8 @@ class InSilicoMAVE():
         """
         N = x_mut.shape[0]
         x_shuffle = dinuc_shuffle(x,num_shufs= N)
-        return np.concatenate([x_shuffle[:,:start_position,:], x_mut, x_shuffle[:,stop_position:,:]], axis=1)
+        x_padded = np.concatenate([x_shuffle[:,:start_position,:], x_mut, x_shuffle[:,stop_position:,:]], axis=1)
+        return x_padded
 
 
 

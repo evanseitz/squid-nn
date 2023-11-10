@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="squid-nn",
-    version="0.2.9",
+    version="0.3.0",
     author="Evan Seitz",
     author_email="evan.e.seitz@gmail.com",
     packages=find_packages(),

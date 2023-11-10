@@ -138,15 +138,15 @@ class SurrogateLinear(SurrogateBase):
         return (None, theta_lc, None)
     
 
-    def get_logo(self, full_length=None, mut_window=None):
+    def get_logo(self, full_length=None, view_window=None):
 
         # insert the (potentially-delimited) additive logo back into the max-length sequence
         if full_length is None:
             full_length = self.L
         additive_logo = self.get_params(self.model)[1]
-        if mut_window is not None:
+        if view_window is not None:
             additive_logo_zeros = np.zeros(shape=(full_length, self.A))
-            additive_logo_zeros[mut_window[0]:mut_window[1], :] = additive_logo
+            additive_logo_zeros[view_window[0]:view_window[1], :] = additive_logo
             additive_logo = additive_logo_zeros
 
         return additive_logo
@@ -429,7 +429,7 @@ class SurrogateMAVENN(SurrogateBase):
         return (theta_0, theta_lc, theta_lclc)
 
 
-    def get_logo(self, full_length=None, mut_window=None):
+    def get_logo(self, full_length=None, view_window=None):
         """Function to place trained additive parameters into surrounding 
         nonmutated sequence (zeros).
 
@@ -437,7 +437,7 @@ class SurrogateMAVENN(SurrogateBase):
         ----------
         full_length : int
             Full length of sequence.
-        mut_window : [int, int]
+        view_window : [int, int]
             Index of start and stop position along sequence to probe;
             i.e., [start, stop], where start < stop and both entries
             satisfy 0 <= int <= L.
@@ -452,9 +452,9 @@ class SurrogateMAVENN(SurrogateBase):
             full_length = self.L
         additive_logo = self.theta_dict['logomaker_df']
         additive_logo.fillna(0, inplace=True) #if necessary, set NaN parameters to zero
-        if mut_window is not None:
+        if view_window is not None:
             additive_logo_zeros = np.zeros(shape=(full_length, self.A))
-            additive_logo_zeros[mut_window[0]:mut_window[1], :] = additive_logo
+            additive_logo_zeros[view_window[0]:view_window[1], :] = additive_logo
             additive_logo = additive_logo_zeros
 
         return additive_logo
