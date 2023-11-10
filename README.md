@@ -46,9 +46,11 @@ For issues installing MAVE-NN, please see:
 - https://mavenn.readthedocs.io/en/latest/installation.html
 - https://github.com/jbkinney/mavenn/issues
 
-For older DNNs that require inference via Tensorflow 1.x, Python 2.x is required which is not supported by MAVE-NN. Users will need to create separate environments in this case:
-1. Tensorflow 1.x and Python 2.x environment for generating *in silico* MAVE data
-2. Tensorflow 2.x and Python 3.x environment for training MAVE-NN surrogate models
+Older DNNs may require inference via Tensorflow 1.x or related packages not supported by MAVE-NN. Users will need to run SQUID piecewise within separate environments:
+1. Tensorflow 1.x environment for generating *in silico* MAVE data
+2. Tensorflow 2.x and Python>=3.72 environment for training MAVE-NN surrogate models
+
+An example of this workflow using BPNet is provided in the `examples/` folder.
 
 
 ## Usage:

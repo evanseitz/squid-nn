@@ -184,22 +184,7 @@ def random_shuffle(seq, alphabet=['A','C','G','T'], num_shufs=None, rng=None):
         If 'num_shufs' is not specified, then the first dimension of N will not be present
         (i.e. a single string will be returned, or an LxD array).
     """
-    def seq2oh(seq, alphabet=['A','C','G','T']):
-        """Function to convert a sequence to one-hot encoding.
-
-        Parameters
-        ----------
-        seq : string
-            Input sequence with length L
-        alphabet : list
-            The alphabet used to determine the C characters in the logo such that
-            each entry is a string; e.g., ['A','C','G','T'] for DNA.
-
-        Returns
-        -------
-        one_hot : numpy.ndarray
-            One-hot encoding corresponding to input sequence (shape : (L,C)).
-        """
+    def seq2oh(seq, alphabet=['A','C','G','T']):   
         L = len(seq)
         one_hot = np.zeros(shape=(L,len(alphabet)), dtype=np.float32)
         for idx, i in enumerate(seq):

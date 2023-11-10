@@ -38,17 +38,22 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 
-task_idx = 'Nanog' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
+# define global pattern (i.e., conserved sequence of interest)
+if 0:
+    task_idx = 'Oct4' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
+    pattern = 'TTTGCAT' # e.g., Oct4 binding site
+elif 0:
+    task_idx = 'Sox2' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
+    pattern = 'GAACAATAG' # e.g., Sox2 binding site
+elif 0:
+    task_idx = 'Klf4' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
+    pattern = 'GGGTGTGGC' # e.g., Klf4 binding site
+else:
+    task_idx = 'Nanog' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
+    pattern = 'AGCCATCAA' # e.g., Nanog binding site
+
 alphabet = ['A','C','G','T']
 seq_length = 1000 # full sequence length of bpnet inputs
-
-
-# define global pattern (i.e., conserved sequence of interest)
-#pattern = 'TTTGCAT' # e.g., Oct4 binding site
-#pattern = 'GAACAATAG' # e.g., Sox2 binding site
-#pattern = 'GGGTGTGGC' # e.g., Klf4 binding site
-pattern = 'AGCCATCAA' # e.g., Nanog binding site
-
 
 # create initial sequence with global pattern surrounded by random background
 start_pos = int(seq_length//2) # position of inserted pattern in background DNA
