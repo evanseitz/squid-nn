@@ -1,5 +1,5 @@
 """
-Demonstration of how to perform SQUID global analysis with example Kipoi model (BPNet)
+Demonstration of how to perform SQUID global (additive) analysis with example Kipoi model (BPNet)
 
 Due to BPNet requiring incompatible libraries with MAVE-NN, the current script is separated
 into two parts (with switches 'STEP 1' and 'STEP 2'). STEP 1 requires an activated BPNet environment.
@@ -19,6 +19,7 @@ sys.dont_write_bytecode = True
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import numpy as np
+import random
 
 
 # =============================================================================
@@ -41,11 +42,19 @@ task_idx = 'Nanog' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
 alphabet = ['A','C','G','T']
 seq_length = 1000 # full sequence length of bpnet inputs
 
+
 # define global pattern (i.e., conserved sequence of interest)
+#pattern = 'TTTGCAT' # e.g., Oct4 binding site
+#pattern = 'GAACAATAG' # e.g., Sox2 binding site
+#pattern = 'GGGTGTGGC' # e.g., Klf4 binding site
 pattern = 'AGCCATCAA' # e.g., Nanog binding site
 
+
+# create initial sequence with global pattern surrounded by random background
 start_pos = int(seq_length//2) # position of inserted pattern in background DNA
-seq = 'N'*int(seq_length//2) + pattern + ('N'*int(seq_length//2))[:-len(pattern)] # pad pattern with background sequence
+bg_left = random.choices(str(''.join(alphabet)), k=start_pos) # random DNA background on LHS
+bg_right = random.choices(str(''.join(alphabet)), k=start_pos-len(pattern)) # random DNA background on RHS
+seq = ''.join(bg_left) + pattern + ''.join(bg_right)
 mut_window = [start_pos, start_pos+len(pattern)] # interval in sequence to mutagenize (locally)
 
 
@@ -67,9 +76,9 @@ if 1: # STEP 1 (BPNet)
     mut_generator = mutagenizer.RandomMutagenesis(mut_rate=0.1, uniform=False)
 
     # generate in silico MAVE
-    num_sim = 20000 # number of sequence to simulate
+    num_sim = 100000 # number of sequence to simulate
     mave = mave.InSilicoMAVE(mut_generator, mut_predictor=bpnet_predictor, seq_length=seq_length, mut_window=mut_window,
-                             context_agnostic=True) # required for global analysis 
+                             alphabet=alphabet, context_agnostic=True) # required for global analysis 
     x_mut, y_mut = mave.generate(x, num_sim=num_sim)
 
     # save in silico MAVE dataset for STEP 2
@@ -112,16 +121,9 @@ else: # STEP 2 (MAVE-NN)
     # retrieve model parameters
     params = surrogate_model.get_params(gauge='empirical')
 
-    # generate sequence logo
-    view_window = [start_pos-15, start_pos+len(pattern)+15]
-    logo = surrogate_model.get_logo(mut_window=view_window, full_length=seq_length)
-    logo_df = squid.utils.arr2pd(logo, alphabet)
-    logo_df.to_csv(os.path.join(save_dir, 'logo.csv'))
-
     # evaluate model performance
     trainval_df, test_df = mavenn.split_dataset(mave_df)
     info = surrogate_model.get_info()
-    print(info)
 
     # plot mavenn model performance
     fig = squid.impress.plot_performance(surrogate, info=info, save_dir=save_dir)
@@ -133,4 +135,5 @@ else: # STEP 2 (MAVE-NN)
     fig = squid.impress.plot_y_vs_phi(surrogate, mave_df=mave_df, save_dir=save_dir)
 
     # plot additive logo in wildtype gauge
-    fig = squid.impress.plot_additive_logo(logo, center=True, view_window=mut_window, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)
+    view_window = [start_pos-15, start_pos+len(pattern)+15]
+    fig = squid.impress.plot_additive_logo(params[1], center=True, view_window=view_window, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)

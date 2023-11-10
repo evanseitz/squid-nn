@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 class InSilicoMAVE():
@@ -16,8 +17,15 @@ class InSilicoMAVE():
         Index of start and stop position along sequence to probe;
         i.e., [start, stop], where start < stop and both entries
         satisfy 0 <= int <= L.
+    context_agnostic : boole
+        Option for generating global neighborhoods, such that the
+        sequence surrounding a conserved pattern of interest is
+        randomly mutated across the in silico MAVE dataset
+    alphabet : list
+        The alphabet used to determine the C characters in the logo such that
+        each entry is a string; e.g., ['A','C','G','T'] for DNA.
     """
-    def __init__(self, mut_generator, mut_predictor, seq_length, mut_window=None, context_agnostic=False):
+    def __init__(self, mut_generator, mut_predictor, seq_length, mut_window=None, context_agnostic=False, alphabet=['A','C','G','T']):
         self.mut_generator = mut_generator
         self.mut_predictor = mut_predictor
         self.seq_length = seq_length
@@ -29,6 +37,7 @@ class InSilicoMAVE():
             self.start_position = 0
             self.stop_position = seq_length
         self.context_agnostic = context_agnostic
+        self.alphabet = alphabet
 
 
     def generate(self, x, num_sim, seed=None, verbose=1):
@@ -123,7 +132,8 @@ class InSilicoMAVE():
             with random DNA (shape: (N,L,C)).
         """
         N = x_mut.shape[0]
-        x_shuffle = dinuc_shuffle(x,num_shufs= N)
+        x_shuffle = random_shuffle(x, self.alphabet, num_shufs=N)
+        #x_shuffle = dinuc_shuffle(x, num_shufs=N)
         x_padded = np.concatenate([x_shuffle[:,:start_position,:], x_mut, x_shuffle[:,stop_position:,:]], axis=1)
         return x_padded
 
@@ -148,7 +158,6 @@ class InSilicoMAVE():
             l = stop_position - start_position (shape: (N,l,C)).
         """
         return x[start_position:stop_position,:]
-    
 
 
 
@@ -156,26 +165,80 @@ class InSilicoMAVE():
 # Useful shuffle function
 #------------------------------------------------------------------------------------
 
+def random_shuffle(seq, alphabet=['A','C','G','T'], num_shufs=None, rng=None):
+    """Creates random shuffles with equiprobability of characters at each position
+    
+    Parameters
+    ----------
+    seq : str or ndarray
+        either a string of length L, or an L x D NumPy array of one-hot encodings
+    num_shufs : int
+        the number of shuffles to create, N; if unspecified, only one shuffle will be created
+    rng : NumPy RandomState object
+        used for performing shuffles
+
+    Returns
+    -------
+    ndarray
+        ndarray of shuffled versions of 'seq' (shape=(N,L,D)), also one-hot encoded
+        If 'num_shufs' is not specified, then the first dimension of N will not be present
+        (i.e. a single string will be returned, or an LxD array).
+    """
+    def seq2oh(seq, alphabet=['A','C','G','T']):
+        """Function to convert a sequence to one-hot encoding.
+
+        Parameters
+        ----------
+        seq : string
+            Input sequence with length L
+        alphabet : list
+            The alphabet used to determine the C characters in the logo such that
+            each entry is a string; e.g., ['A','C','G','T'] for DNA.
+
+        Returns
+        -------
+        one_hot : numpy.ndarray
+            One-hot encoding corresponding to input sequence (shape : (L,C)).
+        """
+        L = len(seq)
+        one_hot = np.zeros(shape=(L,len(alphabet)), dtype=np.float32)
+        for idx, i in enumerate(seq):
+            for jdx, j in enumerate(alphabet):
+                if i == j:
+                    one_hot[idx,jdx] = 1
+        return one_hot
+
+    seqs = np.zeros(shape=(num_shufs,seq.shape[0],seq.shape[1]))
+    for seq_idx in range(num_shufs):
+        random_seq = ''.join(random.choices(str(''.join(alphabet)), k=seq.shape[0]))
+        seqs[seq_idx,:,:] = seq2oh(random_seq, alphabet)
+    return seqs
+
+
 
 # taken from https://github.com/kundajelab/deeplift/blob/master/deeplift/dinuc_shuffle.py
 def dinuc_shuffle(seq, num_shufs=None, rng=None):
-    """
-    Creates shuffles of the given sequence, in which dinucleotide frequencies
+    """Creates shuffles of the given sequence, in which dinucleotide frequencies
     are preserved.
-    Arguments:
-        `seq`: either a string of length L, or an L x D NumPy array of one-hot
-            encodings
-        `num_shufs`: the number of shuffles to create, N; if unspecified, only
-            one shuffle will be created
-        `rng`: a NumPy RandomState object, to use for performing shuffles
-    If `seq` is a string, returns a list of N strings of length L, each one
-    being a shuffled version of `seq`. If `seq` is a 2D NumPy array, then the
-    result is an N x L x D NumPy array of shuffled versions of `seq`, also
-    one-hot encoded. If `num_shufs` is not specified, then the first dimension
-    of N will not be present (i.e. a single string will be returned, or an L x D
-    array).
-    """
 
+    Parameters
+    ----------
+    seq : str or ndarray
+        either a string of length L, or an L x D NumPy array of one-hot encodings
+    num_shufs : int
+        the number of shuffles to create, N; if unspecified, only one shuffle will be created
+        `rng`: a NumPy RandomState object, to use for performing shuffles
+
+    Returns
+    -------
+    list (if 'seq' is string)
+        List of N strings of length L, each one being a shuffled version of 'seq'
+        
+    ndarray (if 'seq' is ndarray)
+        ndarray of shuffled versions of 'seq' (shape=(N,L,D)), also one-hot encoded
+        If 'num_shufs' is not specified, then the first dimension of N will not be present
+        (i.e. a single string will be returned, or an LxD array).
+    """
     def string_to_char_array(seq):
         """
         Converts an ASCII string to a NumPy array of byte-long ASCII codes.
