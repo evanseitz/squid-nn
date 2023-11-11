@@ -1,9 +1,12 @@
 import os
 import numpy as np
 import pandas as pd
-import mavenn
 from tensorflow import keras
 from tensorflow.keras.regularizers import l1_l2
+try:
+    import mavenn
+except ImportError:
+    pass
 
 
 

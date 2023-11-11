@@ -26,7 +26,7 @@ save = True
 # =============================================================================
 if save:
     py_dir = os.path.dirname(os.path.abspath(__file__))
-    save_dir = os.path.join(py_dir, 'outputs_variant_analysis')
+    save_dir = os.path.join(py_dir, 'outputs_variant_effects')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 else:

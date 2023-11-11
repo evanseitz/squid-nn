@@ -33,7 +33,7 @@ gpu = False
 # =============================================================================
 py_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(py_dir)
-save_dir = os.path.join(py_dir, 'outputs_global_analysis')
+save_dir = os.path.join(py_dir, 'outputs_global_additive')
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -41,16 +41,16 @@ if not os.path.exists(save_dir):
 # define global pattern (i.e., conserved sequence of interest)
 if 0:
     task_idx = 'Oct4' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
-    pattern = 'TTTGCAT' # e.g., Oct4 binding site
+    pattern = 'TTTGCAT' # Oct4 binding site
 elif 0:
     task_idx = 'Sox2' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
-    pattern = 'GAACAATAG' # e.g., Sox2 binding site
+    pattern = 'GAACAATAG' # Sox2 binding site
 elif 0:
     task_idx = 'Klf4' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
-    pattern = 'GGGTGTGGC' # e.g., Klf4 binding site
+    pattern = 'GGGTGTGGC' # Klf4 binding site
 else:
     task_idx = 'Nanog' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
-    pattern = 'AGCCATCAA' # e.g., Nanog binding site
+    pattern = 'AGCCATCAA' # Nanog binding site
 
 alphabet = ['A','C','G','T']
 seq_length = 1000 # full sequence length of bpnet inputs

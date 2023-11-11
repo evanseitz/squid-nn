@@ -1,12 +1,17 @@
-import os
+import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import pandas as pd
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-import mavenn
-import logomaker
-from . import utils
+try:
+    from . import utils
+    import mavenn
+    import logomaker
+except ImportError:
+    pass
+
 
 
 def plot_y_hist(y_mut, save_dir=None):
@@ -113,13 +118,13 @@ def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G
     else:
         fig, ax = plt.subplots(figsize=[10,3])
 
-    if view_window is None:
-        logo_fig = logo
-    else:
-        logo_fig = logo[view_window[0]:view_window[1]]
-        logo_fig = utils.arr2pd(logo_fig, alphabet)
+    if view_window is not None:
+        logo = logo[view_window[0]:view_window[1]]
 
-    logomaker.Logo(df=logo_fig,
+    if isinstance(logo, pd.DataFrame) == False:
+        logo = utils.arr2pd(logo, alphabet)
+
+    logomaker.Logo(df=logo,
                     ax=ax,
                     fade_below=.5,
                     shade_below=.5,
@@ -127,6 +132,7 @@ def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G
                     center_values=center,
                     #font_name='Arial Rounded MT Bold'  # causes excess warnings on colab
                     )
+    
     if view_window is not None:
         ax.set_xticks(np.arange(0, view_window[1]-view_window[0], 1))
         ax.set_xticklabels(np.arange(view_window[0], view_window[1], 1))
@@ -143,7 +149,7 @@ def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G
     return fig 
 
 
-def plot_pairwise_matrix(theta_lclc, view_window=None, alphabet=['A','C','G','T'], save_dir=None):
+def plot_pairwise_matrix(theta_lclc, view_window=None, alphabet=['A','C','G','T'], threshold=None, save_dir=None):
     """Function for visualizing MAVE-NN pairwise model parameters.
 
     Parameters
@@ -157,6 +163,9 @@ def plot_pairwise_matrix(theta_lclc, view_window=None, alphabet=['A','C','G','T'
     alphabet : list
         The alphabet used to determine the C characters in the logo such that
         each entry is a string; e.g., ['A','C','G','T'] for DNA.
+    threshold : float
+        Define threshold window centered around zero for removing potential noise
+        from parameters for cleaner pairwise matrix visualization
     save_dir : str
         Directory for saving figures to file.
 
@@ -164,6 +173,10 @@ def plot_pairwise_matrix(theta_lclc, view_window=None, alphabet=['A','C','G','T'
     -------
     matplotlib.pyplot.Figure
     """
+    if threshold is not None:
+        temp = theta_lclc.flatten()
+        temp[(temp >= -1.*threshold) & (temp <= threshold)] = 0
+        theta_lclc = temp.reshape(theta_lclc.shape)
 
     # plot maveen pairwise matrix
     fig, ax = plt.subplots(figsize=[10,5])
@@ -177,8 +190,10 @@ def plot_pairwise_matrix(theta_lclc, view_window=None, alphabet=['A','C','G','T'
                                     cmap_pad=.1,
                                     show_seplines=True,            
                                     sepline_kwargs = {'color': 'k',
-                                                      'linestyle': '-',
-                                                      'linewidth': .5})
+                                                        'linestyle': '-',
+                                                        'linewidth': .5,
+                                                        'color':'gray'})           
+
     if view_window is not None:
         ax.xaxis.set_ticks(np.arange(0, view_window[1]-view_window[0], 2))
         ax.set_xticklabels(np.arange(view_window[0], view_window[1], 2))  
@@ -187,6 +202,11 @@ def plot_pairwise_matrix(theta_lclc, view_window=None, alphabet=['A','C','G','T'
     cb.outline.set_visible(False)
     cb.ax.tick_params(direction='in', size=20, color='white')
     ax.set_xlabel('Nucleotide position')
+
+    # set up isometric colorbar
+    theta_max = [abs(np.amin(theta_lclc)), abs(np.amax(theta_lclc))]
+    plt.cm.ScalarMappable.set_clim(cb, vmin=-1.*np.amax(theta_max), vmax=np.amax(theta_max))
+
     plt.tight_layout()
     if save_dir is not None:
         plt.savefig(os.path.join(save_dir, 'pairwise_matrix.png'), facecolor='w', dpi=200)
@@ -215,7 +235,8 @@ def plot_y_vs_yhat(model, mave_df, save_dir=None):
 
     # plot mavenn y versus yhat
     fig, ax = plt.subplots(1,1,figsize=[5,5])
-    trainval_df, test_df = mavenn.split_dataset(mave_df)
+    with hidden_prints():
+        trainval_df, test_df = mavenn.split_dataset(mave_df)
     y_test = test_df['y'] #get test data y values
     yhat_test = model.x_to_yhat(test_df['x']) #compute yhat on test data
     Rsq = np.corrcoef(yhat_test.ravel(), test_df['y'])[0, 1]**2 #compute R^2 between yhat_test and y_test    
@@ -255,7 +276,8 @@ def plot_y_vs_phi(model, mave_df, save_dir=None):
 
     # plot mavenn y versus phi
     fig, ax = plt.subplots(1,1,figsize=[5,5])
-    trainval_df, test_df = mavenn.split_dataset(mave_df)
+    with hidden_prints():
+        trainval_df, test_df = mavenn.split_dataset(mave_df)
     phi_test = model.x_to_phi(test_df['x']) #compute φ on test data
     phi_lim = [min(phi_test)-.5, max(phi_test)+.5] #set phi limit and create a grid in phi space
     phi_grid = np.linspace(phi_lim[0], phi_lim[1], 1000)
@@ -350,3 +372,14 @@ def plot_eig_vecs(U, v1, v2, save_dir=None):
     #else:
         #plt.show()
     return fig
+
+
+class hidden_prints:
+    """Function to temporarily hide print statements."""
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout

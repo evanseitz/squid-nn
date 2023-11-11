@@ -1,12 +1,17 @@
 import numpy as np
 from tqdm import tqdm
+try:
+    import impress
+except ImportError:
+    pass
 
 
 class BasePredictor():
     """
     Base class for running inference on in silico mutated sequences.
     """
-
+    save_dir = None
+    
     def __init__(self):
         raise NotImplementedError()
 
@@ -71,7 +76,7 @@ class ProfilePredictor(BasePredictor):
         self.batch_size = batch_size
         self.reduce_fun = reduce_fun
         #self.axis = axis
-        self.save_dir = save_dir
+        BasePredictor.save_dir = save_dir
         self.kwargs = kwargs
 
     def __call__(self, x):
@@ -105,12 +110,13 @@ class BPNetPredictor(BasePredictor):
         Batch of scalar predictions corresponding to inputs.
     """
 
-    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun='wn', axis=1, **kwargs):
+    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun='wn', axis=1, save_dir=None, **kwargs):
         self.pred_fun = pred_fun
         self.task_idx = task_idx
         self.batch_size = batch_size
         self.reduce_fun = reduce_fun
         self.axis = axis
+        BasePredictor.save_dir = save_dir
         self.kwargs = kwargs
 
         if self.reduce_fun == 'wn': # transformation used in the original BPNet paper
@@ -135,11 +141,10 @@ class BPNetPredictor(BasePredictor):
         # get model predictions (all tasks)
         pred = predict_in_batches(x, self.pred_fun, self.batch_size, self.task_idx, **self.kwargs)
 
-        # reduce bpnet profile prediction to scalar across axis for a given task_idx
+        # reduce profile prediction to scalar across axis for a given task_idx
         pred = self.reduce_fun(pred)
 
         return pred[:,np.newaxis]
-
 
 
 
@@ -204,7 +209,7 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwar
 
 
 
-def profile_sum(pred, save_dir=None):
+def profile_sum(pred):
     """Function to transform predictions to scalars using summation.
 
     Parameters
@@ -217,12 +222,11 @@ def profile_sum(pred, save_dir=None):
     numpy.ndarray
         Batch of scalar predictions.
     """
-
     sum = np.sum(pred, axis=1)
     return sum
 
 
-def profile_pca(pred, save_dir=None):
+def profile_pca(pred):
     """Function to transform predictions to scalars using principal component analysis (PCA).
 
     Parameters
@@ -236,10 +240,15 @@ def profile_pca(pred, save_dir=None):
         Batch of scalar predictions formed from projection of embedded
         profiles onto the first principal component.
     """
+    if pred.ndim > 2:
+        dim_multiply = 1
+        for dim in pred.shape[1:]:
+            dim_multiply *= dim
+        pred = pred.reshape(pred.shape[0], dim_multiply)
 
-    N, B = pred.shape #B : number of bins in profile
+    N, B = pred.shape # number of bins (B) in profile
     Y = pred.copy()
-    sum = np.sum(pred, axis=1) #needed for sense correction
+    sum = np.sum(pred, axis=1) # needed for eigenvector sense correction
 
     # normalization: mean of all distributions is subtracted from each distribution
     mean_all = np.mean(Y, axis=0)
@@ -247,18 +256,19 @@ def profile_pca(pred, save_dir=None):
         Y[i,:] -= mean_all
 
     u,s,v = np.linalg.svd(Y.T, full_matrices=False)
-    vals = s**2 #eigenvalues
-    vecs = u #eigenvectors
+    vals = s**2 # eigenvalues
+    vecs = u # eigenvectors
     
     U = Y.dot(vecs)
     v1, v2 = 0, 1
     
     corr = np.corrcoef(sum, U[:,v1])
-    if corr[0,1] < 0: #correct for eigenvector "sense"
+    if corr[0,1] < 0: # correct sense of eigenvector
         U[:,v1] = -1.*U[:,v1]
 
-    #impress.plot_eig_vals(vals, save_dir=save_dir)
-    #impress.plot_eig_vecs(U, v1=v1, v2=v2, save_dir=save_dir)
+    if BasePredictor.save_dir is not None:
+        impress.plot_eig_vals(vals, save_dir=BasePredictor.save_dir)
+        impress.plot_eig_vecs(U, v1=v1, v2=v2, save_dir=BasePredictor.save_dir)
 
     return U[:,v1]
 
