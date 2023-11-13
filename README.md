@@ -17,7 +17,7 @@ SQUID: interpreting sequence-based deep learning models for regulatory genomics
 <!--- <em>Genome Biol</em> **23**, 98 (2022). https://doi.org/10.1186/s13059-022-02661-7 --->
 ---
 
-## Install:
+## Installation:
 
 With [Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) sourced, create a new environment via the command line:
 
