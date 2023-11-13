@@ -21,11 +21,15 @@ class InSilicoMAVE():
         Option for generating global neighborhoods, such that the
         sequence surrounding a conserved pattern of interest is
         randomly mutated across the in silico MAVE dataset
+    inter_window : [int, int] or [[int, int], [int, int], ...]
+        Index of start and stop position of each inter-site window,
+        where each window defines the boundaries of the sequence
+        in between two sites of interest (optional,  for 'context_agnostic')
     alphabet : list
         The alphabet used to determine the C characters in the logo such that
         each entry is a string; e.g., ['A','C','G','T'] for DNA.
     """
-    def __init__(self, mut_generator, mut_predictor, seq_length, mut_window=None, context_agnostic=False, alphabet=['A','C','G','T']):
+    def __init__(self, mut_generator, mut_predictor, seq_length, mut_window=None, context_agnostic=False, inter_window=None, alphabet=['A','C','G','T']):
         self.mut_generator = mut_generator
         self.mut_predictor = mut_predictor
         self.seq_length = seq_length
@@ -37,6 +41,7 @@ class InSilicoMAVE():
             self.start_position = 0
             self.stop_position = seq_length
         self.context_agnostic = context_agnostic
+        self.inter_window = inter_window
         self.alphabet = alphabet
 
 
@@ -71,6 +76,18 @@ class InSilicoMAVE():
             x_mut = self.mut_generator(x_window, num_sim)
             if self.context_agnostic:
                 x_mut = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
+
+                # optional: perform global mutagenesis in between two (or more) sites of interest
+                if self.inter_window is not None:
+                    num_inter_windows = sum(isinstance(i, list) for i in self.inter_window) # count number of inter-site windows
+                    if num_inter_windows == 0:
+                        num_inter_windows += 1
+                        self.inter_window = [self.inter_window]
+                    for w in range(num_inter_windows):
+                        w_start = self.inter_window[w][0]
+                        w_stop = self.inter_window[w][1]
+                        x_mut = self.pad_seq_random(x_mut, x, w_start, w_stop, inter=True)
+
             else:
                 x_mut = self.pad_seq(x_mut, x, self.start_position, self.stop_position)
             y_mut = self.mut_predictor(x_mut)
@@ -110,7 +127,7 @@ class InSilicoMAVE():
 
 
 
-    def pad_seq_random(self, x_mut, x, start_position, stop_position):
+    def pad_seq_random(self, x_mut, x, start_position, stop_position, dinuc=False, inter=False):
         """Function to pad mutated sequences on both sides with random DNA.
         
         Parameters
@@ -124,6 +141,10 @@ class InSilicoMAVE():
             Index of start position along sequence to probe.
         stop_position : int
             Index of stop position along sequence to probe.
+        dinuc : boole
+            Perform mutagenesis by random shuffle (False) or dinucleotide shuffle (True).
+        inter : boole
+            Pad sequence to the left and right of 'mut_window' (False) or within 'inter_window' (True)
 
         Returns
         -------
@@ -132,9 +153,16 @@ class InSilicoMAVE():
             with random DNA (shape: (N,L,C)).
         """
         N = x_mut.shape[0]
-        x_shuffle = random_shuffle(x, self.alphabet, num_shufs=N)
-        #x_shuffle = dinuc_shuffle(x, num_shufs=N)
-        x_padded = np.concatenate([x_shuffle[:,:start_position,:], x_mut, x_shuffle[:,stop_position:,:]], axis=1)
+        if dinuc is False:
+            x_shuffle = random_shuffle(x, self.alphabet, num_shufs=N)
+        else:
+            x_shuffle = dinuc_shuffle(x, num_shufs=N)
+
+        if inter is False:
+            x_padded = np.concatenate([x_shuffle[:,:start_position,:], x_mut, x_shuffle[:,stop_position:,:]], axis=1)
+        else:
+            x_padded = np.concatenate([x_mut[:,:start_position,:], x_shuffle[:,start_position:stop_position,:], x_mut[:,stop_position:,:]], axis=1)
+
         return x_padded
 
 
@@ -170,12 +198,10 @@ def random_shuffle(seq, alphabet=['A','C','G','T'], num_shufs=None, rng=None):
     
     Parameters
     ----------
-    seq : str or ndarray
-        either a string of length L, or an L x D NumPy array of one-hot encodings
+    seq : ndarray
+        one-hot encoding of sequence
     num_shufs : int
-        the number of shuffles to create, N; if unspecified, only one shuffle will be created
-    rng : NumPy RandomState object
-        used for performing shuffles
+        the number of shuffles to create; if unspecified, only one shuffle will be created
 
     Returns
     -------
@@ -192,6 +218,9 @@ def random_shuffle(seq, alphabet=['A','C','G','T'], num_shufs=None, rng=None):
                 if i == j:
                     one_hot[idx,jdx] = 1
         return one_hot
+    
+    if num_shufs is None:
+        num_shufs = 1
 
     seqs = np.zeros(shape=(num_shufs,seq.shape[0],seq.shape[1]))
     for seq_idx in range(num_shufs):

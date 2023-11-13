@@ -241,10 +241,13 @@ def profile_pca(pred):
         profiles onto the first principal component.
     """
     if pred.ndim > 2:
-        dim_multiply = 1
-        for dim in pred.shape[1:]:
-            dim_multiply *= dim
-        pred = pred.reshape(pred.shape[0], dim_multiply)
+        if 1: # flatten profile predictions across all profile dimensions
+            dim_multiply = 1
+            for dim in pred.shape[1:]:
+                dim_multiply *= dim
+            pred = pred.reshape(pred.shape[0], dim_multiply)
+        else: # take only jth profile prediction
+            pred = pred[:,:,0] # e.g., j=0 for positive strand profile (BPNet)
 
     N, B = pred.shape # number of bins (B) in profile
     Y = pred.copy()
@@ -271,6 +274,7 @@ def profile_pca(pred):
         impress.plot_eig_vecs(U, v1=v1, v2=v2, save_dir=BasePredictor.save_dir)
 
     return U[:,v1]
+
 
 
 """

@@ -2,11 +2,12 @@
 Demonstration of how to perform SQUID global (pairwise) analysis with example Kipoi model (BPNet)
 
 Due to BPNet requiring incompatible libraries with MAVE-NN, the current script is separated
-into two parts (with switches 'STEP 1' and 'STEP 2'). STEP 1 requires an activated BPNet environment.
+into two parts (with switches 'STEP 1' and 'STEP 2'). STEP 1 requires an activated BPNet environment,
+and can be run via: 'python example_global_pairwise.py 1 {inter_dist}' where '{inter_dist}' is an int.
 Once outputs are saved to file, deactivate the environment and activate the MAVE-NN environment.
-Finally, turn off the STEP 1 switch below (i.e., 'if 0:') and rerun this script.
+Finally, rerun this script via: 'python example_global_pairwise.py 2 {inter_dist}'
 
-For using Kipoi models, the following packages must be installed:
+For using the BPNet Kipoi model, the following packages must be installed in the BPNet environment:
     >>> pip install kipoi --upgrade
     >>> pip install kipoiseq --upgrade
 
@@ -22,21 +23,21 @@ import numpy as np
 import random
 
 
-def op(py_dir, inter_dist, step):
+def op(py_dir, step, inter_dist):
     """Function to enable batch computations for different values of inter-site distance.
-    Hyperparameters are defined via command line: e.g., python example_global_pairwise.py 10 1
+    Hyperparameters are defined via command line: e.g., python example_global_pairwise.py 1 10
     representing an 'inter_dist' of 10 for 'step' 1. All other hyperparameters should be adjusted
-    inside the script before running. It is also possible to run a batch of 'inter_dist' values
+    inside this function before running. It is also possible to run a batch of 'inter_dist' values
     sequentially (i.e., 'bash example_global_pairwise_batch.sh') or in parralel on GPUs via:
-    e.g.,   for i in {0..30}; do echo "python example_global_pairwise.py $i 1 
+    e.g.,   for i in {0..30}; do echo "python example_global_pairwise.py 1 $i 
             device=\$CUDA_VISIBLE_DEVICES && sleep 3"; done | simple_gpu_scheduler --gpus 0,1,2
 
     Parameters
     ----------
+    step : int
+        either 1 or 2 for STEP 1 (BPNet) or STEP 2 (MAVE-NN), respectively
     inter_dist : int
         inter-site distance between end of pattern_1 and start of pattern_2 (0 <= inter_dist)
-    step : int
-        either 1 or 2 for STEP 1 (BPNet) or STEP 2 (MAVE-NN), respectively; see comments at top of script
     """
     gpu = True
     parent_dir = os.path.dirname(py_dir)
@@ -50,11 +51,12 @@ def op(py_dir, inter_dist, step):
     seq_length = 1000 # full sequence length of bpnet inputs
 
     # create initial sequence with global patterns surrounded by random background
-    start_pos1 = int(seq_length//2) # position of inserted pattern_1 in background DNA
+    start_pos = int(seq_length//2) # position of inserted pattern_1 in background DNA
     bg = ''.join(random.choices(str(''.join(alphabet)), k=seq_length)) # random DNA background
-    seq = bg[:start_pos1] + pattern_1 + bg[start_pos1:start_pos1+inter_dist] + pattern_2 + bg[start_pos1+inter_dist:]
+    seq = bg[:start_pos] + pattern_1 + bg[start_pos:start_pos+inter_dist] + pattern_2 + bg[start_pos+inter_dist:]
     seq = seq[:seq_length]
-    mut_window = [start_pos1, start_pos1+len(pattern_1)+inter_dist+len(pattern_2)] # interval in sequence to mutagenize (locally)
+    mut_window = [start_pos, start_pos+len(pattern_1)+inter_dist+len(pattern_2)] # interval in sequence to mutagenize (locally)
+    inter_window = [start_pos+len(pattern_1), start_pos+len(pattern_1)+inter_dist] # inter-pattern window to mutagenize (globally)
 
     save_dir = os.path.join(py_dir, 'outputs_global_pairwise/dist_%s' % inter_dist)
     if not os.path.exists(save_dir):
@@ -83,7 +85,7 @@ def op(py_dir, inter_dist, step):
         # generate in silico MAVE
         num_sim = 100000 # number of sequence to simulate
         mave = mave.InSilicoMAVE(mut_generator, mut_predictor=bpnet_predictor, seq_length=seq_length, mut_window=mut_window,
-                                alphabet=alphabet, context_agnostic=True) # required for global analysis 
+                                alphabet=alphabet, inter_window=inter_window, context_agnostic=True) # this line required for global analysis 
         x_mut, y_mut = mave.generate(x, num_sim=num_sim)
 
         # save in silico MAVE dataset for STEP 2
@@ -105,7 +107,7 @@ def op(py_dir, inter_dist, step):
         y_mut = np.load(os.path.join(save_dir, 'y_mut.npy'))
 
         # delimit sequence to region of interest (required for pairwise computational constraints)
-        x_mut = x_mut[:,495:550,:]
+        x_mut = x_mut[:,490:550,:]
 
         # MAVE-NN model with GE nonlinearity
         surrogate_model = squid.surrogate_zoo.SurrogateMAVENN(x_mut.shape, num_tasks=y_mut.shape[1],
@@ -148,18 +150,20 @@ def op(py_dir, inter_dist, step):
         # plot pairwise matrix
         fig = squid.impress.plot_pairwise_matrix(params[2], view_window=None, alphabet=alphabet, threshold=.25, save_dir=save_dir)
 
+
+
 if __name__ == '__main__':
     py_dir = os.path.dirname(os.path.abspath(__file__))
     if len(sys.argv) > 2:
-        inter_dist = int(sys.argv[1])
-        step = int(sys.argv[2])
-        if inter_dist < 0:
-            print('Argument for the inter-site distance must be greater than 0.')
-            sys.exit(0)
+        step = int(sys.argv[1])
+        inter_dist = int(sys.argv[2])
         if step not in [1, 2]:
             print('Argument for the current step must be 1 or 2.')
+            sys.exit(0)
+        if inter_dist < 0:
+            print('Argument for the inter-site distance must be greater than 0.')
             sys.exit(0)
     else:
         print('Script must be run with correct arguments.')
         sys.exit(0)
-    op(py_dir, inter_dist, step)
+    op(py_dir, step, inter_dist)

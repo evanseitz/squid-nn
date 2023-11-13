@@ -13,5 +13,5 @@ for i in {0..35}; # 'inter_dist'
 do
 	foo=$(printf "%02d" $i)
 	echo "${foo}"
-	python $pyPath "${foo}" "${step}"
+	python $pyPath "${step}" "${foo}"
 done
