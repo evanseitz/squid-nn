@@ -5,6 +5,9 @@ from tensorflow import keras
 from tensorflow.keras.regularizers import l1_l2
 try:
     import mavenn
+except ImportError:
+    pass
+try:
     from sklearn.linear_model import RidgeCV
 except ImportError:
     pass

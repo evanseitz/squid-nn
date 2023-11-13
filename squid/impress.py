@@ -7,7 +7,13 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 try:
     from . import utils
+except ImportError:
+    pass
+try:
     import mavenn
+except ImportError:
+    pass
+try:
     import logomaker
 except ImportError:
     pass
