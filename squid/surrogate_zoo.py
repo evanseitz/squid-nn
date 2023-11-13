@@ -5,6 +5,7 @@ from tensorflow import keras
 from tensorflow.keras.regularizers import l1_l2
 try:
     import mavenn
+    from sklearn.linear_model import RidgeCV
 except ImportError:
     pass
 
@@ -22,6 +23,7 @@ class SurrogateBase():
 
     def get_params(self, x):
         raise NotImplementedError()
+
 
 
 class SurrogateLinear(SurrogateBase):
@@ -134,6 +136,149 @@ class SurrogateLinear(SurrogateBase):
 
         theta_lc = self.model.layers[2].get_weights()[0]
         theta_lc = theta_lc.reshape((self.L, self.A))
+
+        if save_dir is not None:
+            np.save(os.path.join(save_dir, 'theta_lc.npy'), theta_lc)
+
+        return (None, theta_lc, None)
+    
+
+    def get_logo(self, full_length=None, view_window=None):
+
+        # insert the (potentially-delimited) additive logo back into the max-length sequence
+        if full_length is None:
+            full_length = self.L
+        additive_logo = self.get_params(self.model)[1]
+        if view_window is not None:
+            additive_logo_zeros = np.zeros(shape=(full_length, self.A))
+            additive_logo_zeros[view_window[0]:view_window[1], :] = additive_logo
+            additive_logo = additive_logo_zeros
+
+        return additive_logo
+    
+
+
+class SurrogateRidgeCV(SurrogateBase):
+    """Module for linear surrogate model (no GE or noise models) using sklearn RidgeCV.
+    For more information, see https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html
+
+    Parameters
+    ----------
+    alphas : array-like of shape (n_alphas,), default=(0.1, 1.0, 10.0)
+        Array of alpha values to try. Regularization strength; must be a positive float.
+        Regularization improves the conditioning of the problem and reduces the variance of the estimates.
+        Larger values specify stronger regularization. Alpha corresponds to 1 / (2C) in other linear models
+        such as LogisticRegression or LinearSVC. If using Leave-One-Out cross-validation, alphas must be positive.
+    cv : int, cross-validation generator or an iterable, default=None
+        Determines the cross-validation splitting strategy. Possible inputs for cv are:
+            - None, to use the efficient Leave-One-Out cross-validation
+            - integer, to specify the number of folds
+            - CV splitter
+            - An iterable yielding (train, test) splits as arrays of indices.
+
+    Returns
+    -------
+    sklearn.Model
+    """
+    def __init__(self, input_shape, num_tasks, alphas=[1e-3, 1e-2, 1e-1, 1], cv=5,
+                 deduplicate=True, alphabet=['A','C','G','T'], gpu=True):
+
+        self.N, self.L, self.A = input_shape
+        self.num_tasks = num_tasks
+        self.alphas = alphas
+        self.cv = cv
+        self.alphabet = alphabet
+        self.deduplicate = deduplicate
+        self.gpu = gpu
+
+
+    def dataframe(self, x, y, alphabet, gpu):
+        
+        N = x.shape[0]
+        mave_df = pd.DataFrame(columns = ['y', 'x'], index=range(N))
+        mave_df['y'] = y
+        
+        if gpu is False:
+            alphabet_dict = {}
+            idx = 0
+            for i in range(len(alphabet)):
+                alphabet_dict[i] = alphabet[i]
+                idx += 1
+            for i in range(N): #standard approach
+                seq_index = np.argmax(x[i,:,:], axis=1)
+                seq = []
+                for s in seq_index:
+                    seq.append(alphabet_dict[s])
+                seq = ''.join(seq)
+                mave_df.at[i, 'x'] = seq
+
+        elif gpu is True: # convert entire matrix at once (~twice as fast as standard approach if running on GPUs)
+            seq_index_all = np.argmax(x, axis=-1)
+            num2alpha = dict(zip(range(0, len(alphabet)), alphabet))
+            seq_vector_all = np.vectorize(num2alpha.get)(seq_index_all)
+            seq_list_all = seq_vector_all.tolist()
+            dictionary_list = []
+            for i in range(0, N, 1):
+                dictionary_data = {0: ''.join(seq_list_all[i])}
+                dictionary_list.append(dictionary_data)
+            mave_df['x'] = pd.DataFrame.from_dict(dictionary_list)
+
+        return mave_df
+    
+
+    def train(self, x, y, verbose=1):
+
+        # convert matrix of one-hots into sequence dataframe
+        if verbose:
+            print('  Creating sequence dataframe...')
+            print('')
+        mave_df = self.dataframe(x, y, alphabet=self.alphabet, gpu=self.gpu)
+        if verbose:
+            print(mave_df)
+
+        if self.deduplicate:
+            mave_df.drop_duplicates(['y', 'x'], inplace=True, keep='first')
+
+        x = x.reshape(x.shape[0], -1)
+
+
+        # encode one hots
+        #X = np.zeros(shape=(mave_df['x'].shape[0], len(mave_df['x'][0]), len(self.alphabet)))
+        #for i in range(mave_df['x'].shape[0]):
+            #X[i,:,:] = squid_utils.seq2oh(mave['x'][i], alphabet)
+        
+        # run RidgeCV regression
+        #Y = np.array(mave_df['y'])
+        #X = X.reshape(X.shape[0], -1)
+        self.model = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1], cv=5).fit(x, y)
+
+        return (self.model, mave_df)
+    
+
+    def get_params(self, gauge=None, save_dir=None):
+        """Function to return trained parameters from the RidgeCV model.
+
+        Parameters
+        ----------
+        gauge : None
+            None, to match output of MAVE-NN get_params()
+        save_dir : str
+            Directory for saving figures to file.
+        
+        Returns
+        -------
+        tuple 
+            theta_0     :   None
+                None, to match output of MAVE-NN get_params()
+            theta_lc    :   numpy.ndarray
+                Additive terms in trained parameters (shape : (L,C)).
+            theta_lclc  :   None
+                None, to match output of MAVE-NN get_params()
+        """
+        coef = self.model.coef_
+        #yhat = self.model.predict(X)
+
+        theta_lc = coef.reshape((self.L, self.A))
 
         if save_dir is not None:
             np.save(os.path.join(save_dir, 'theta_lc.npy'), theta_lc)

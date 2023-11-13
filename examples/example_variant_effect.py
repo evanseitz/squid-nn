@@ -26,7 +26,7 @@ save = True
 # =============================================================================
 if save:
     py_dir = os.path.dirname(os.path.abspath(__file__))
-    save_dir = os.path.join(py_dir, 'outputs_variant_effects')
+    save_dir = os.path.join(py_dir, 'outputs_variant_effect')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 else:
@@ -77,16 +77,13 @@ surrogate, mave_df = surrogate_model.train(x_mut, y_mut, learning_rate=5e-4, epo
 # retrieve model parameters
 params = surrogate_model.get_params(gauge='empirical')
 
-# generate sequence logo
-logo = surrogate_model.get_logo(view_window=mut_window, full_length=seq_length)
-
 # fix gauge for variant effect prediction
-variant_effect = squid.utils.fix_gauge(logo, gauge='wildtype', wt=x_mut[0])
+variant_effect = squid.utils.fix_gauge(params[1], gauge='wildtype', wt=x_mut[0])
 
-# save variant effects to pandas
+# save variant effect predictions to pandas
 variant_effect_df = squid.utils.arr2pd(variant_effect, alphabet)
 print(variant_effect_df)
-variant_effect_df.to_csv(os.path.join(save_dir, 'variant_effects.csv'))
+variant_effect_df.to_csv(os.path.join(save_dir, 'variant_effect_predictions.csv'))
 
 # plot additive logo in wildtype gauge
-fig = squid.impress.plot_additive_logo(variant_effect, center=False, view_window=mut_window, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)
+fig = squid.impress.plot_additive_logo(variant_effect, center=False, view_window=None, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)

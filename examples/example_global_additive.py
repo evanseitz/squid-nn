@@ -141,7 +141,7 @@ def op(py_dir, step):
         # plot mavenn y versus phi
         fig = squid.impress.plot_y_vs_phi(surrogate, mave_df=mave_df, save_dir=save_dir)
 
-        # plot additive logo in wildtype gauge
+        # plot additive logo in hierarchical gauge
         view_window = [start_pos-15, start_pos+len(pattern)+15]
         fig = squid.impress.plot_additive_logo(params[1], center=True, view_window=view_window, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)
 
