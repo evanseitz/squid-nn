@@ -35,7 +35,7 @@ def op(py_dir, step):
     parent_dir = os.path.dirname(py_dir)
 
     # define a global pattern (i.e., conserved sequence of interest)
-    if 1:
+    if 0:
         task_idx = 'Oct4' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
         pattern = 'TTTGCAT' # Oct4 binding site
     elif 0:
@@ -44,7 +44,7 @@ def op(py_dir, step):
     elif 0:
         task_idx = 'Klf4' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
         pattern = 'GGGTGTGGC' # Klf4 binding site
-    elif 0:
+    elif 1:
         task_idx = 'Nanog' # bpnet task index ('Oct4', 'Sox2', 'Klf4' or 'Nanog')
         pattern = 'AGCCATCAA' # Nanog binding site
 
