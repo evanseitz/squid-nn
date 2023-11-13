@@ -8,7 +8,7 @@ Examples of applying SQUID on previously-published deep learning models can be f
 .. toctree::
     :maxdepth: 1
 
-    tutorials/1_squid_deepstarr_example.ipynb
+    tutorials/squid_deepstarr_example.ipynb
     tutorials/2_squid_residualbind32_example.ipynb
     tutorials/3_squid_variant_effect_kipoi_example.ipynb
 
