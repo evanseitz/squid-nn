@@ -9,7 +9,7 @@ Examples of applying SQUID on previously-published deep learning models can be f
     2. `Colab – Pairwise (local) surrogate modeling with Residual-Bind32 <https://colab.research.google.com/drive/1eKC78YE2l49mQFOlnA9Xr1Y9IO121Va5?usp=sharing>`_
     3. `Colab – Variant effect (local) analysis with DeepSTARR (Kipoi) <https://colab.research.google.com/drive/1wtpT1FF5nu1etTDOaV3A7ByXhuLqK071?usp=sharing>`_
 
-Several Python examples are also provided in the SQUID repository, each requiring a prerequisite environment for the corresponding deep learning model.
+Several Python examples are also provided in the SQUID repository.
 
     1. `Python – Variant effect (local) analysis with DeepSTARR (Kipoi) <https://github.com/evanseitz/squid-nn/blob/master/examples/example_variant_effects.py>`_
     2. `Python – Additive global surrogate modeling with BPNet (Kipoi) <https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_additive.py>`_
