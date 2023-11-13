@@ -244,16 +244,6 @@ class SurrogateRidgeCV(SurrogateBase):
             mave_df.drop_duplicates(['y', 'x'], inplace=True, keep='first')
 
         x = x.reshape(x.shape[0], -1)
-
-
-        # encode one hots
-        #X = np.zeros(shape=(mave_df['x'].shape[0], len(mave_df['x'][0]), len(self.alphabet)))
-        #for i in range(mave_df['x'].shape[0]):
-            #X[i,:,:] = squid_utils.seq2oh(mave['x'][i], alphabet)
-        
-        # run RidgeCV regression
-        #Y = np.array(mave_df['y'])
-        #X = X.reshape(X.shape[0], -1)
         self.model = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1], cv=5).fit(x, y)
 
         return (self.model, mave_df)
@@ -280,7 +270,7 @@ class SurrogateRidgeCV(SurrogateBase):
                 None, to match output of MAVE-NN get_params()
         """
         coef = self.model.coef_
-        #yhat = self.model.predict(X)
+        #yhat = self.model.predict(x) # run inference on dataset
 
         theta_lc = coef.reshape((self.L, self.A))
 
