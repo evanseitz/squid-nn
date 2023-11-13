@@ -229,7 +229,8 @@ class SurrogateRidgeCV(SurrogateBase):
         return mave_df
     
 
-    def train(self, x, y, verbose=1):
+    def train(self, x, y, learning_rate=None, epochs=None, batch_size=None, early_stopping=None,
+              patience=None, restore_best_weights=None, rnd_seed=None, save_dir=None, verbose=1):
 
         # convert matrix of one-hots into sequence dataframe
         if verbose:
