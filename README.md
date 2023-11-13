@@ -58,6 +58,8 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 
 <img src="./docs/_static/framework.png" alt="fig" width="1000"/>
 
+### Examples
+
 - **Google Colab examples** of applying SQUID on previously-published deep learning models are available at the following links:
 
 	- [Additive (local) surrogate modeling with DeepSTARR](https://colab.research.google.com/drive/12HR8Vu_8ji3Ac1wli4wgqx1J0YB73JF_?usp=sharing)
