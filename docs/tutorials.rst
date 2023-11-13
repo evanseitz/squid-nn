@@ -14,3 +14,8 @@ Several Python examples are also provided in the SQUID repository.
     1. `Python – Variant effect (local) analysis with DeepSTARR (Kipoi) <https://github.com/evanseitz/squid-nn/blob/master/examples/example_variant_effects.py>`_
     2. `Python – Additive global surrogate modeling with BPNet (Kipoi) <https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_additive.py>`_
     3. `Python – Pairwise global surrogate modeling with BPNet (Kipoi) <https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_pairwise.py>`_
+
+
+.. note::
+
+    While dependencies are automatically handled in the Colab notebooks, Python scripts must be run with the correct environment manually installed.
