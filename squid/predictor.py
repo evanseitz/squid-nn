@@ -209,7 +209,7 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwar
 
 
 
-def profile_sum(pred):
+def profile_sum(pred, save_dir=None):
     """Function to transform predictions to scalars using summation.
 
     Parameters
@@ -226,7 +226,7 @@ def profile_sum(pred):
     return sum
 
 
-def profile_pca(pred):
+def profile_pca(pred, save_dir=None):
     """Function to transform predictions to scalars using principal component analysis (PCA).
 
     Parameters

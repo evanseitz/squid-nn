@@ -60,15 +60,18 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 
 - **Examples in Google Colab**:
 
-	- [Additive (local) surrogate modeling](https://colab.research.google.com/drive/12HR8Vu_8ji3Ac1wli4wgqx1J0YB73JF_?usp=sharing)
+	- [Additive (local) surrogate modeling with DeepSTARR](https://colab.research.google.com/drive/12HR8Vu_8ji3Ac1wli4wgqx1J0YB73JF_?usp=sharing)
 
-	- [Pairwise (local) surrogate modeling](https://colab.research.google.com/drive/1eKC78YE2l49mQFOlnA9Xr1Y9IO121Va5?usp=sharing)
+	- [Pairwise (local) surrogate modeling with ResidualBind-32](https://colab.research.google.com/drive/1eKC78YE2l49mQFOlnA9Xr1Y9IO121Va5?usp=sharing)
 	
-	- [Variant effect (local) analysis](https://colab.research.google.com/drive/1wtpT1FF5nu1etTDOaV3A7ByXhuLqK071?usp=sharing)
+	- [Variant effect (local) prediction with DeepSTARR (Kipoi)](https://colab.research.google.com/drive/1wtpT1FF5nu1etTDOaV3A7ByXhuLqK071?usp=sharing)
 	
 - **Examples in Python**: 
 
-	- The Python scripts in the `examples/` contain code for locally running SQUID and exporting outputs to file. Examples include global surrogate modeling using BPNet. Additional dependencies for these examples may be required and outlined at the top of each script
+	- The Python scripts in the `examples/` contain code for locally running SQUID and exporting outputs to file. Additional dependencies for these examples may be required and outlined at the top of each script. Examples include:
+		- [Variant effect (local) prediction with DeepSTARR (Kipoi)](https://github.com/evanseitz/squid-nn/blob/master/examples/example_variant_effects.py)
+		- [Additive (global) surrogate modeling with BPNet (Kipoi)](https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_additive.py)
+		- [Pairwise (global) surrogate modeling with BPNet (Kipoi)](https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_pairwise.py)
 
 	- The `squid-manuscript` repository contains examples to reproduce results in the manuscript, including the application of SQUID on other DNNs such as ENFORMER: https://github.com/evanseitz/squid-manuscript
 
