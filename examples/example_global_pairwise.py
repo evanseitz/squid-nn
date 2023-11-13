@@ -107,10 +107,10 @@ def op(py_dir, step, inter_dist):
         y_mut = np.load(os.path.join(save_dir, 'y_mut.npy'))
 
         # delimit sequence to region of interest (required for pairwise computational constraints)
-        x_mut = x_mut[:,490:550,:]
+        x_mut_trim = x_mut[:,490:550,:]
 
         # MAVE-NN model with GE nonlinearity
-        surrogate_model = squid.surrogate_zoo.SurrogateMAVENN(x_mut.shape, num_tasks=y_mut.shape[1],
+        surrogate_model = squid.surrogate_zoo.SurrogateMAVENN(x_mut_trim.shape, num_tasks=y_mut.shape[1],
                                                         gpmap=gpmap, regression_type='GE',
                                                         linearity='nonlinear', noise='SkewedT',
                                                         noise_order=2, reg_strength=0.1,
@@ -118,7 +118,7 @@ def op(py_dir, step, inter_dist):
                                                         gpu=gpu)
 
         # train surrogate model
-        surrogate, mave_df = surrogate_model.train(x_mut, y_mut, learning_rate=5e-4, epochs=500, batch_size=100,
+        surrogate, mave_df = surrogate_model.train(x_mut_trim, y_mut, learning_rate=5e-4, epochs=500, batch_size=100,
                                                 early_stopping=True, patience=25, restore_best_weights=True,
                                                 save_dir=None, verbose=1)
         
