@@ -67,7 +67,7 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 - [Variant effect (local) prediction with DeepSTARR–Kipoi](https://colab.research.google.com/drive/1wtpT1FF5nu1etTDOaV3A7ByXhuLqK071?usp=sharing)
 	
 
-**Python script examples** are also provided in the `examples/` folder for locally running SQUID and exporting outputs to file. Additional dependencies for these examples may be required and outlined at the top of each script. Examples include:
+**Python script examples** are provided in the `examples/` folder for locally running SQUID and exporting outputs to file. Additional dependencies for these examples may be required and outlined at the top of each script. Examples include:
 - [Variant effect (local) prediction with DeepSTARR–Kipoi](https://github.com/evanseitz/squid-nn/blob/master/examples/example_variant_effects.py)
 - [Additive (global) surrogate modeling with BPNet–Kipoi](https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_additive.py)
 - [Pairwise (global) surrogate modeling with BPNet–Kipoi](https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_pairwise.py)
