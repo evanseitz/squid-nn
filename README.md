@@ -72,7 +72,7 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 - [Additive (global) surrogate modeling with BPNet–Kipoi](https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_additive.py)
 - [Pairwise (global) surrogate modeling with BPNet–Kipoi](https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_pairwise.py)
 
-As well, the `squid-manuscript` repository contains examples to reproduce results in the manuscript, including the application of SQUID on other DNNs such as ENFORMER: https://github.com/evanseitz/squid-manuscript
+As well, the [squid-manuscript](https://github.com/evanseitz/squid-manuscript) repository contains examples to reproduce results in the manuscript, including the application of SQUID on other DNNs such as ENFORMER
 
 
 ## Citation:
