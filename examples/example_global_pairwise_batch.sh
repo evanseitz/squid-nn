@@ -9,7 +9,7 @@ pyDir="${PWD}"
 pyPath="$pyDir/example_global_pairwise.py"
 step=1 # 'step'
 
-for i in {0..35}; # 'inter_dist'
+for i in {0..32}; # 'inter_dist'
 do
 	foo=$(printf "%02d" $i)
 	echo "${foo}"

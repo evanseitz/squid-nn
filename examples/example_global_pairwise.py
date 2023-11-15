@@ -148,7 +148,7 @@ def op(py_dir, step, inter_dist):
         fig = squid.impress.plot_additive_logo(params[1], center=True, view_window=None, alphabet=alphabet, fig_size=[20,2.5], save_dir=save_dir)
 
         # plot pairwise matrix
-        fig = squid.impress.plot_pairwise_matrix(params[2], view_window=None, alphabet=alphabet, threshold=.25, save_dir=save_dir)
+        fig = squid.impress.plot_pairwise_matrix(params[2], view_window=None, alphabet=alphabet, threshold=None, save_dir=save_dir)
 
 
 
