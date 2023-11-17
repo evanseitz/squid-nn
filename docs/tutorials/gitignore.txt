@@ -1,4 +1,0 @@
-*.h5
-*.pickle
-*.png
-*.pdf
