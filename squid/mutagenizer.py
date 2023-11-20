@@ -36,7 +36,7 @@ class RandomMutagenesis(BaseMutagenesis):
 
     Returns
     -------
-    torch.Tensor
+    numpy.ndarray
         Batch of one-hot sequences with random mutagenesis applied.
     """
 
@@ -59,6 +59,39 @@ class RandomMutagenesis(BaseMutagenesis):
             num_muts = np.random.poisson(avg_num_mut, (num_sim, 1))[:,0]
         num_muts = np.clip(num_muts, 0, L)
         one_hot = apply_mut_by_seq_index(x_index, (num_sim,L,A), num_muts)
+        return one_hot
+    
+
+class CombinatorialMutagenesis():
+    """Module for performing combinatorial mutagenesis.
+
+    Returns
+    ----------
+    numpy.ndarray
+        Batch of one-hot sequences with combinatorial mutagenesis applied,
+        such that the number of sequences produced is the number of characters A
+        in the alphabet raised to the length L of the 'mut_window'.
+    """
+
+    def __call__(self, x, num_sim): # 'num_sim' will be replaced by A**L
+
+        L, A = x.shape
+
+        def seq2oh(seq, alphabet=['A','C','G','T']):   
+            L = len(seq)
+            one_hot = np.zeros(shape=(L,len(alphabet)), dtype=np.float32)
+            for idx, i in enumerate(seq):
+                for jdx, j in enumerate(alphabet):
+                    if i == j:
+                        one_hot[idx,jdx] = 1
+            return one_hot
+
+        from itertools import product
+        seqs = list(product(list(range(A)), repeat=L))
+        one_hot = np.zeros(shape=(int(A**L), L, A))
+        for i in tqdm(range(int(A**L)), desc="Mutagenesis"):
+            one_hot[i,:,:] = seq2oh(seqs[i], alphabet=list(range(A)))
+
         return one_hot
 
 
