@@ -38,6 +38,8 @@ Finally, when you are done using the environment, always exit via `conda deactiv
 
 ### Notes
 
+SQUID has been tested on Mac and Linux operating systems. Typical installation time on a normal computer is less than 5 minutes.
+
 If you have any issues installing SQUID, please see:
 - https://squid-nn.readthedocs.io/en/latest/installation.html
 - https://github.com/evanseitz/squid-nn/issues
@@ -73,6 +75,8 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 - [Pairwise (global) surrogate modeling with BPNet–Kipoi](https://github.com/evanseitz/squid-nn/blob/master/examples/example_global_pairwise.py)
 
 As well, the [squid-manuscript](https://github.com/evanseitz/squid-manuscript) repository contains examples to reproduce results in the manuscript, including the application of SQUID on other DNNs such as ENFORMER
+
+Expected run time for the "Variant effect (local) prediction with DeepSTARR–Kipoi" demo (above) is 4 minutes using Google Colab V100 GPU.
 
 
 ## Citation:
