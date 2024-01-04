@@ -1,5 +1,5 @@
 import os
-os.environ["TQDM_DISABLE"] = "1"
+#os.environ["TQDM_DISABLE"] = "1"
 import numpy as np
 from tqdm import tqdm
 

@@ -46,7 +46,7 @@ class InSilicoMAVE():
             self.stop_position = seq_length
         self.context_agnostic = context_agnostic
         self.inter_window = inter_window
-        if save_window is not None:
+        if save_window is not None and mut_window is not None:
             if (save_window[0] > mut_window[0]) or (save_window[1] < mut_window[1]):
                 save_window = None
                 print("Conflict found in 'save_window' interval, setting to None.")
@@ -84,7 +84,6 @@ class InSilicoMAVE():
         if self.mut_window is not None:
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
-            print('!',x.shape)
             if self.context_agnostic:
                 x_mut = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
 
@@ -100,13 +99,11 @@ class InSilicoMAVE():
                         x_mut = self.pad_seq_random(x_mut, x, w_start, w_stop, inter=True)
 
             else:
-                print('!!', x_mut.shape)
                 x_mut = self.pad_seq(x_mut, x, self.start_position, self.stop_position, self.save_window)
 
             if self.mut_predictor is None: # skip inference
                 y_mut = None
             else: # required for surrogate modeling
-                print('!!!', x_mut.shape)
                 y_mut = self.mut_predictor(x_mut, x, self.save_window)
 
         else:
