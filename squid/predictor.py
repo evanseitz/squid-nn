@@ -45,7 +45,7 @@ class ScalarPredictor(BasePredictor):
         self.batch_size = batch_size
         self.save_window = save_window
 
-    def __call__(self, x, x_ref):
+    def __call__(self, x, x_ref, save_window):
         pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=self.save_window, **self.kwargs)
         return pred[self.task_idx]
 
@@ -81,7 +81,7 @@ class ProfilePredictor(BasePredictor):
         self.save_window = save_window
         self.kwargs = kwargs
 
-    def __call__(self, x, x_ref):
+    def __call__(self, x, x_ref, save_window):
         # get model predictions (all tasks)
         pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=self.save_window, **self.kwargs)
 
@@ -138,7 +138,7 @@ class BPNetPredictor(BasePredictor):
                 return pred_scalars
             self.reduce_fun = contribution_score
 
-    def __call__(self, x, x_ref):
+    def __call__(self, x, x_ref, save_window):
         # get model predictions (all tasks)
         pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, task_idx=self.task_idx, save_window=self.save_window, **self.kwargs)
 
