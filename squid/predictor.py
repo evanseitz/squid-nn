@@ -38,15 +38,14 @@ class ScalarPredictor(BasePredictor):
         Batch of scalar predictions corresponding to inputs.
     """
 
-    def __init__(self, pred_fun, task_idx=0, batch_size=64, save_window=None, **kwargs):
+    def __init__(self, pred_fun, task_idx=0, batch_size=64, **kwargs):
         self.pred_fun = pred_fun
         self.task_idx = task_idx
         self.kwargs = kwargs
         self.batch_size = batch_size
-        self.save_window = save_window
 
     def __call__(self, x, x_ref, save_window):
-        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=self.save_window, **self.kwargs)
+        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=save_window, **self.kwargs)
         return pred[self.task_idx]
 
 
@@ -71,19 +70,18 @@ class ProfilePredictor(BasePredictor):
         Batch of scalar predictions corresponding to inputs.
     """
 
-    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun=np.sum, save_dir=None, save_window=None, **kwargs):
+    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun=np.sum, save_dir=None, **kwargs):
         self.pred_fun = pred_fun
         self.task_idx = task_idx
         self.batch_size = batch_size
         self.reduce_fun = reduce_fun
         #self.axis = axis
         BasePredictor.save_dir = save_dir
-        self.save_window = save_window
         self.kwargs = kwargs
 
     def __call__(self, x, x_ref, save_window):
         # get model predictions (all tasks)
-        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=self.save_window, **self.kwargs)
+        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=save_window, **self.kwargs)
 
         # reduce profile to scalar across axis for a given task_idx
         pred = self.reduce_fun(pred[:,:,self.task_idx], save_dir=self.save_dir)
@@ -112,14 +110,13 @@ class BPNetPredictor(BasePredictor):
         Batch of scalar predictions corresponding to inputs.
     """
 
-    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun='wn', axis=1, save_dir=None, save_window=None, **kwargs):
+    def __init__(self, pred_fun, task_idx=0, batch_size=64, reduce_fun='wn', axis=1, save_dir=None, **kwargs):
         self.pred_fun = pred_fun
         self.task_idx = task_idx
         self.batch_size = batch_size
         self.reduce_fun = reduce_fun
         self.axis = axis
         BasePredictor.save_dir = save_dir
-        self.save_window = save_window
         self.kwargs = kwargs
 
         if self.reduce_fun == 'wn': # transformation used in the original BPNet paper
@@ -140,7 +137,7 @@ class BPNetPredictor(BasePredictor):
 
     def __call__(self, x, x_ref, save_window):
         # get model predictions (all tasks)
-        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, task_idx=self.task_idx, save_window=self.save_window, **self.kwargs)
+        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, task_idx=self.task_idx, save_window=save_window, **self.kwargs)
 
         # reduce profile prediction to scalar across axis for a given task_idx
         pred = self.reduce_fun(pred)

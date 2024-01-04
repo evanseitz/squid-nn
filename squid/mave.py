@@ -104,7 +104,7 @@ class InSilicoMAVE():
             if self.mut_predictor is None: # skip inference
                 y_mut = None
             else: # necessary for surrogate modeling
-                y_mut = self.mut_predictor(x_mut, x_ref)
+                y_mut = self.mut_predictor(x_mut, x_ref, self.save_window)
 
         else:
             x_mut = self.mut_generator(x, num_sim)
@@ -112,7 +112,7 @@ class InSilicoMAVE():
             if self.mut_predictor is None: # skip inference
                 y_mut = None
             else: # necessary for surrogate modeling
-                y_mut = self.mut_predictor(x_mut, x_ref)
+                y_mut = self.mut_predictor(x_mut, x_ref, self.save_window)
 
         return x_mut, y_mut
 
