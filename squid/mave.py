@@ -80,11 +80,11 @@ class InSilicoMAVE():
             print('Building in silico MAVE...')
 
         # generate in silico MAVE based on mutagenesis strategy
-        x_ref = x[0]
+        #x_ref = x[0]
         if self.mut_window is not None:
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
-            print('!',x_ref.shape)
+            print('!',x.shape)
             if self.context_agnostic:
                 x_mut = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
 
@@ -107,14 +107,14 @@ class InSilicoMAVE():
                 y_mut = None
             else: # required for surrogate modeling
                 print('!!!', x_mut.shape)
-                y_mut = self.mut_predictor(x_mut, x_ref, self.save_window)
+                y_mut = self.mut_predictor(x_mut, x, self.save_window)
 
         else:
             x_mut = self.mut_generator(x, num_sim)
             if self.mut_predictor is None: # skip inference
                 y_mut = None
             else: # required for surrogate modeling
-                y_mut = self.mut_predictor(x_mut, x_ref, self.save_window)
+                y_mut = self.mut_predictor(x_mut, x, self.save_window)
 
         return x_mut, y_mut
 
