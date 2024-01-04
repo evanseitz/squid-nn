@@ -90,10 +90,18 @@ class InSilicoMAVE():
 
             else:
                 x_mut = self.pad_seq(x_mut, x, self.start_position, self.stop_position)
-            y_mut = self.mut_predictor(x_mut)
+
+            if self.mut_predictor is None: # skip inference
+                y_mut = None
+            else: # necessary for surrogate modeling
+                y_mut = self.mut_predictor(x_mut)
+
         else:
             x_mut = self.mut_generator(x, num_sim)
-            y_mut = self.mut_predictor(x_mut)
+            if self.mut_predictor is None: # skip inference
+                y_mut = None
+            else: # necessary for surrogate modeling
+                y_mut = self.mut_predictor(x_mut)
 
         return x_mut, y_mut
 
@@ -126,7 +134,7 @@ class InSilicoMAVE():
         x_start = np.broadcast_to(x[:,:start_position,:], (N,start_position,x.shape[2]))
         x_stop = np.broadcast_to(x[:,stop_position:,:], (N,x.shape[1]-stop_position,x.shape[2]))
 
-        if 0: # TBD: compare memory use
+        if 1: # TBD: compare memory use
             x_joined = np.zeros(shape=(N, x.shape[1], x.shape[2]), dtype='uint8')
             x_joined[:,:start_position,:] = x_start
             x_joined[:,start_position:stop_position,:] = x_mut
