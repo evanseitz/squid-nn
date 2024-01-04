@@ -81,12 +81,14 @@ class InSilicoMAVE():
             print('Building in silico MAVE...')
 
         # generate in silico MAVE based on mutagenesis strategy
-        #x_ref = x[0]
         if self.mut_window is not None:
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
             if self.context_agnostic:
                 x_mut = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
+
+                if self.save_window:
+                    print("Variable 'save_window' not yet implemented for 'context_agnostic' mode.")
 
                 # optional: perform global mutagenesis in between two (or more) sites of interest
                 if self.inter_window is not None:
