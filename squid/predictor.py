@@ -190,13 +190,15 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwar
     num_batches = np.floor(N/batch_size).astype(int)
     pred = []
     for i in tqdm(range(num_batches), desc="Inference"):
-        p = model_pred_fun(x[i*batch_size:(i+1)*batch_size])
+        x_batch = x[i*batch_size:(i+1)*batch_size]
+        p = model_pred_fun(x_batch.astype(float))
         if task_idx is not None:
             p = p[task_idx]
         pred.append(p, **kwargs)
 
     if num_batches*batch_size < N:
-        p = model_pred_fun(x[num_batches*batch_size:])
+        x_batch = x[num_batches*batch_size:]
+        p = model_pred_fun(x_batch.astype(float))
         if task_idx is not None:
             p = p[task_idx]
         pred.append(p, **kwargs)
