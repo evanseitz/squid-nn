@@ -84,6 +84,7 @@ class InSilicoMAVE():
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
             x_ref = x_mut[0]
+            print('!',x_ref.shape)
             if self.context_agnostic:
                 x_mut = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
 
@@ -99,11 +100,13 @@ class InSilicoMAVE():
                         x_mut = self.pad_seq_random(x_mut, x, w_start, w_stop, inter=True)
 
             else:
+                print('!!', x_mut.shape)
                 x_mut = self.pad_seq(x_mut, x, self.start_position, self.stop_position, self.save_window)
 
             if self.mut_predictor is None: # skip inference
                 y_mut = None
             else: # necessary for surrogate modeling
+                print('!!!', x_mut.shape)
                 y_mut = self.mut_predictor(x_mut, x_ref, self.save_window)
 
         else:
