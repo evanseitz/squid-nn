@@ -120,7 +120,7 @@ class InSilicoMAVE():
             with random DNA (shape: (N,L,C)).
         """
         N = x_mut.shape[0]
-        x = x[np.newaxis,:]
+        x = x[np.newaxis,:].astype(int)
         x_start = np.tile(x[:,:start_position,:], (N,1,1))
         x_stop = np.tile(x[:,stop_position:,:], (N,1,1))
         return np.concatenate([x_start, x_mut, x_stop], axis=1)
@@ -152,6 +152,7 @@ class InSilicoMAVE():
             Sequences with randomly mutated segments, padded to correct shape
             with random DNA (shape: (N,L,C)).
         """
+        x = x.astype(int)
         N = x_mut.shape[0]
         if dinuc is False:
             x_shuffle = random_shuffle(x, self.alphabet, num_shufs=N)
