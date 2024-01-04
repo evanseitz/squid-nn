@@ -44,6 +44,7 @@ class InSilicoMAVE():
         else:
             self.start_position = 0
             self.stop_position = seq_length
+            mut_window = [self.start_position, self.stop_position]
         self.context_agnostic = context_agnostic
         self.inter_window = inter_window
         if save_window is not None and mut_window is not None:
