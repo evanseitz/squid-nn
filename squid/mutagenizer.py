@@ -156,4 +156,4 @@ def apply_mut_by_seq_index(x_index, shape, num_muts):
 
             # create one-hot from index
             one_hot[i,:,:] = np.eye(A)[seq_index]
-    return one_hot.astype(int)
+    return one_hot.astype('uint8')

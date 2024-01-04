@@ -120,10 +120,21 @@ class InSilicoMAVE():
             with random DNA (shape: (N,L,C)).
         """
         N = x_mut.shape[0]
-        x = x[np.newaxis,:].astype(int)
-        x_start = np.tile(x[:,:start_position,:], (N,1,1))
-        x_stop = np.tile(x[:,stop_position:,:], (N,1,1))
-        return np.concatenate([x_start, x_mut, x_stop], axis=1)
+        x = x[np.newaxis,:].astype('uint8')
+        #x_start = np.tile(x[:,:start_position,:], (N,1,1)) # high memory use
+        #x_stop = np.tile(x[:,stop_position:,:], (N,1,1)) # high memory use
+        x_start = np.broadcast_to(x[:,:start_position,:], (N,start_position,x.shape[2]))
+        x_stop = np.broadcast_to(x[:,stop_position:,:], (N,x.shape[1]-stop_position,x.shape[2]))
+
+        if 0: # TBD: compare memory use
+            x_joined = np.zeros(shape=(N, x.shape[1], x.shape[2]), dtype='uint8')
+            x_joined[:,:start_position,:] = x_start
+            x_joined[:,start_position:stop_position,:] = x_mut
+            x_joined[:,stop_position:,:] = x_stop
+        else:
+            x_joined = np.concatenate([x_start, x_mut, x_stop], axis=1)
+
+        return x_joined
 
 
 
@@ -152,7 +163,7 @@ class InSilicoMAVE():
             Sequences with randomly mutated segments, padded to correct shape
             with random DNA (shape: (N,L,C)).
         """
-        x = x.astype(int)
+        x = x.astype('uint8')
         N = x_mut.shape[0]
         if dinuc is False:
             x_shuffle = random_shuffle(x, self.alphabet, num_shufs=N)
