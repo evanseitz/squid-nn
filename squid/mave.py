@@ -25,11 +25,15 @@ class InSilicoMAVE():
         Index of start and stop position of each inter-site window,
         where each window defines the boundaries of the sequence
         in between two sites of interest (optional,  for 'context_agnostic')
+    save_window : [int <= mut_window[0], int >= mut_window[1]]
+        Window used for delimiting sequences that are exported in 'x_mut' array;
+        if used, the 'save_window' interval must be equal to or larger 'mut_window',
+        and if larger, 'save window' must contain the interval 'mut_window' entirely
     alphabet : list
         The alphabet used to determine the C characters in the logo such that
         each entry is a string; e.g., ['A','C','G','T'] for DNA.
     """
-    def __init__(self, mut_generator, mut_predictor, seq_length, mut_window=None, context_agnostic=False, inter_window=None, alphabet=['A','C','G','T']):
+    def __init__(self, mut_generator, mut_predictor, seq_length, mut_window=None, context_agnostic=False, inter_window=None, save_window=None, alphabet=['A','C','G','T']):
         self.mut_generator = mut_generator
         self.mut_predictor = mut_predictor
         self.seq_length = seq_length
@@ -42,6 +46,11 @@ class InSilicoMAVE():
             self.stop_position = seq_length
         self.context_agnostic = context_agnostic
         self.inter_window = inter_window
+        if save_window is not None:
+            if (save_window[0] > mut_window[0]) or (save_window[1] < mut_window[1]):
+                save_window = None
+                print("Conflict found in 'save_window' interval, setting to None.")
+        self.save_window = save_window
         self.alphabet = alphabet
 
 
@@ -74,6 +83,7 @@ class InSilicoMAVE():
         if self.mut_window is not None:
             x_window = self.delimit_range(x, self.start_position, self.stop_position)
             x_mut = self.mut_generator(x_window, num_sim)
+            x_ref = x_mut[0]
             if self.context_agnostic:
                 x_mut = self.pad_seq_random(x_mut, x, self.start_position, self.stop_position)
 
@@ -89,24 +99,25 @@ class InSilicoMAVE():
                         x_mut = self.pad_seq_random(x_mut, x, w_start, w_stop, inter=True)
 
             else:
-                x_mut = self.pad_seq(x_mut, x, self.start_position, self.stop_position)
+                x_mut = self.pad_seq(x_mut, x, self.start_position, self.stop_position, self.save_window)
 
             if self.mut_predictor is None: # skip inference
                 y_mut = None
             else: # necessary for surrogate modeling
-                y_mut = self.mut_predictor(x_mut)
+                y_mut = self.mut_predictor(x_mut, x_ref)
 
         else:
             x_mut = self.mut_generator(x, num_sim)
+            x_ref = x_mut[0]
             if self.mut_predictor is None: # skip inference
                 y_mut = None
             else: # necessary for surrogate modeling
-                y_mut = self.mut_predictor(x_mut)
+                y_mut = self.mut_predictor(x_mut, x_ref)
 
         return x_mut, y_mut
 
 
-    def pad_seq(self, x_mut, x, start_position, stop_position):
+    def pad_seq(self, x_mut, x, start_position, stop_position, save_window):
         """Function to pad mutated sequences on both sides with the original unmutated context.
         
         Parameters
@@ -131,18 +142,14 @@ class InSilicoMAVE():
         x = x[np.newaxis,:].astype('uint8')
         #x_start = np.tile(x[:,:start_position,:], (N,1,1)) # high memory use
         #x_stop = np.tile(x[:,stop_position:,:], (N,1,1)) # high memory use
-        x_start = np.broadcast_to(x[:,:start_position,:], (N,start_position,x.shape[2]))
-        x_stop = np.broadcast_to(x[:,stop_position:,:], (N,x.shape[1]-stop_position,x.shape[2]))
-
-        if 1: # TBD: compare memory use
-            x_joined = np.zeros(shape=(N, x.shape[1], x.shape[2]), dtype='uint8')
-            x_joined[:,:start_position,:] = x_start
-            x_joined[:,start_position:stop_position,:] = x_mut
-            x_joined[:,stop_position:,:] = x_stop
+        if save_window is None:
+            x_start = np.broadcast_to(x[:,:start_position,:], (N,start_position,x.shape[2]))
+            x_stop = np.broadcast_to(x[:,stop_position:,:], (N,x.shape[1]-stop_position,x.shape[2]))
         else:
-            x_joined = np.concatenate([x_start, x_mut, x_stop], axis=1)
+            x_start = np.broadcast_to(x[:,save_window[0]:start_position,:], (N,start_position-save_window[0],x.shape[2]))
+            x_stop = np.broadcast_to(x[:,stop_position:save_window[1],:], (N,save_window[1]-stop_position,x.shape[2]))
 
-        return x_joined
+        return np.concatenate([x_start, x_mut, x_stop], axis=1)
 
 
 

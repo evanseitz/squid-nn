@@ -15,7 +15,7 @@ class BasePredictor():
     def __init__(self):
         raise NotImplementedError()
 
-    def __call__(self, x):
+    def __call__(self, x, x_ref, save_window):
         raise NotImplementedError()
 
 
@@ -44,8 +44,8 @@ class ScalarPredictor(BasePredictor):
         self.kwargs = kwargs
         self.batch_size = batch_size
 
-    def __call__(self, x):
-        pred = predict_in_batches(x, self.pred_fun, self.batch_size, **self.kwargs)
+    def __call__(self, x, x_ref, save_window):
+        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=save_window, **self.kwargs)
         return pred[self.task_idx]
 
 
@@ -79,9 +79,9 @@ class ProfilePredictor(BasePredictor):
         BasePredictor.save_dir = save_dir
         self.kwargs = kwargs
 
-    def __call__(self, x):
+    def __call__(self, x, x_ref, save_window):
         # get model predictions (all tasks)
-        pred = predict_in_batches(x, self.pred_fun, self.batch_size, **self.kwargs)
+        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=save_window, **self.kwargs)
 
         # reduce profile to scalar across axis for a given task_idx
         pred = self.reduce_fun(pred[:,:,self.task_idx], save_dir=self.save_dir)
@@ -133,13 +133,11 @@ class BPNetPredictor(BasePredictor):
                     with tf.Session(graph=graph).as_default() as sess:
                         pred_scalars[pred_idx] = float(wn.eval())              
                 return pred_scalars
-            
             self.reduce_fun = contribution_score
 
-
-    def __call__(self, x):
+    def __call__(self, x, x_ref, save_window):
         # get model predictions (all tasks)
-        pred = predict_in_batches(x, self.pred_fun, self.batch_size, self.task_idx, **self.kwargs)
+        pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, task_idx=self.task_idx, save_window=save_window, **self.kwargs)
 
         # reduce profile prediction to scalar across axis for a given task_idx
         pred = self.reduce_fun(pred)
@@ -168,7 +166,7 @@ class CustomPredictor():
 ################################################################################
 
 
-def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwargs):
+def predict_in_batches(x, x_ref, model_pred_fun, batch_size=None, task_idx=None, save_window=None, **kwargs):
     """Function to compute model predictions in batch mode.
 
     Parameters
@@ -179,6 +177,8 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwar
         Built-in function for accessing model inference on inputs.
     batch_size : int
         The number of predictions per batch of model inference.
+    save_window : [int, int]
+        Window used for delimiting sequences that are exported in 'x_mut' array
 
     Returns
     -------
@@ -186,11 +186,20 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwar
         Model predictions.
     """
 
+    if save_window is not None:
+        x_ref = x_ref[np.newaxis,:].astype('uint8')
+
     N, L, A = x.shape
     num_batches = np.floor(N/batch_size).astype(int)
     pred = []
     for i in tqdm(range(num_batches), desc="Inference"):
         x_batch = x[i*batch_size:(i+1)*batch_size]
+
+        if save_window is not None:
+            x_ref_start = np.broadcast_to(x_ref[:,:save_window[0],:], (x_batch.shape[0],save_window[0],x_ref.shape[2]))
+            x_ref_stop = np.broadcast_to(x_ref[:,save_window[1]:,:], (x_batch.shape[0],x_ref.shape[1]-save_window[1],x_ref.shape[2]))
+            x_batch = np.concatenate([x_ref_start, x_batch, x_ref_stop], axis=1)
+
         p = model_pred_fun(x_batch.astype(float))
         if task_idx is not None:
             p = p[task_idx]
@@ -198,6 +207,12 @@ def predict_in_batches(x, model_pred_fun, batch_size=None, task_idx=None, **kwar
 
     if num_batches*batch_size < N:
         x_batch = x[num_batches*batch_size:]
+
+        if save_window is not None:
+            x_ref_start = np.broadcast_to(x_ref[:,:save_window[0],:], (x_batch.shape[0],save_window[0],x_ref.shape[2]))
+            x_ref_stop = np.broadcast_to(x_ref[:,save_window[1]:,:], (x_batch.shape[0],x_ref.shape[1]-save_window[1],x_ref.shape[2]))
+            x_batch = np.concatenate([x_ref_start, x_batch, x_ref_stop], axis=1)
+
         p = model_pred_fun(x_batch.astype(float))
         if task_idx is not None:
             p = p[task_idx]
