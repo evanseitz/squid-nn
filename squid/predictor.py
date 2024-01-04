@@ -1,5 +1,7 @@
-import numpy as np
+import os
+os.environ["TQDM_DISABLE"] = "1"
 from tqdm import tqdm
+import numpy as np
 try:
     import impress
 except ImportError:
