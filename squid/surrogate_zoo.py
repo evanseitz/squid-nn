@@ -323,6 +323,9 @@ class SurrogateMAVENN(SurrogateBase):
         In the linear context, the order is zero by default.
     reg_strength : float
         L2 regularization strength for G-P map parameters.
+    hidden_nodes : int
+        Number of hidden nodes (i.e. sigmoidal contributions) to use when defining the nonlinearity component of a GE model.
+        Has no effect on MPA models.
     alphabet : list
         The alphabet used to determine the C characters in the logo such that
         each entry is a string; e.g., ['A','C','G','T'] for DNA.
@@ -337,7 +340,7 @@ class SurrogateMAVENN(SurrogateBase):
     """
     def __init__(self, input_shape, num_tasks, gpmap='additive', regression_type='GE',
                  linearity='nonlinear', noise='SkewedT', noise_order=2, reg_strength=0.1,
-                 alphabet=['A','C','G','T'], deduplicate=True, gpu=True):
+                 hidden_nodes=50, alphabet=['A','C','G','T'], deduplicate=True, gpu=True):
         
         self.N, self.L, self.A = input_shape
         self.num_tasks = num_tasks
@@ -350,6 +353,7 @@ class SurrogateMAVENN(SurrogateBase):
         elif self.linearity == 'nonlinear':
             self.noise_order = noise_order
         self.reg_strength = reg_strength
+        self.hidden_nodes = hidden_nodes
         self.alphabet = alphabet
         self.deduplicate = deduplicate
         self.gpu = gpu
@@ -458,6 +462,7 @@ class SurrogateMAVENN(SurrogateBase):
                                 ge_noise_model_type=self.noise,
                                 ge_heteroskedasticity_order=self.noise_order, 
                                 gpmap_type=self.gpmap,
+                                ge_nonlinearity_hidden_nodes=self.hidden_nodes,
                                 gpmap_kwargs=gpmap_kwargs)
             y_data = trainval_df['y']
         
