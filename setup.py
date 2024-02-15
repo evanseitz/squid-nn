@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="squid-nn",
-    version="0.3.8",
+    version="0.3.9",
     author="Evan Seitz",
     author_email="evan.e.seitz@gmail.com",
     packages=find_packages(),
@@ -14,9 +14,9 @@ setup(
     ],
     python_requires=">=3.7.2",
     install_requires=[
-    	'numpy==1.21.6',
+    	'numpy,
 	'matplotlib>=3.2.0',
-	'pandas==1.3.5',
-        'tqdm==4.66.1',
+	'pandas',
+        'tqdm',
     ],
 )
