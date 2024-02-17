@@ -8,7 +8,7 @@ try:
 except ImportError:
     pass
 try:
-    from sklearn.linear_model import RidgeCV
+    from sklearn.linear_model import Lasso, RidgeCV
 except ImportError:
     pass
 
@@ -160,6 +160,133 @@ class SurrogateLinear(SurrogateBase):
         return additive_logo
     
 
+class SurrogateLasso(SurrogateBase):
+    """Module for linear surrogate model (no GE or noise models) using sklearn Lasso.
+    For more information, see https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html
+
+    Parameters
+    ----------
+    alpha : float, default=1.0
+        Constant that multiplies the L1 term, controlling regularization strength;
+        alpha must be a non-negative float i.e. in [0, inf). When alpha = 0, 
+        the objective is equivalent to ordinary least squares, solved by the
+        LinearRegression object. For numerical reasons, using alpha = 0 with the 
+        Lasso object is not advised. Instead, you should use the LinearRegression object.
+
+    Returns
+    -------
+    sklearn.Model
+    """
+    def __init__(self, input_shape, num_tasks, alpha=1,
+                 deduplicate=True, alphabet=['A','C','G','T'], gpu=True):
+
+        self.N, self.L, self.A = input_shape
+        self.num_tasks = num_tasks
+        self.alpha = alpha
+        self.alphabet = alphabet
+        self.deduplicate = deduplicate
+        self.gpu = gpu
+
+
+    def dataframe(self, x, y, alphabet, gpu):
+        
+        N = x.shape[0]
+        mave_df = pd.DataFrame(columns = ['y', 'x'], index=range(N))
+        mave_df['y'] = y
+        
+        if gpu is False:
+            alphabet_dict = {}
+            idx = 0
+            for i in range(len(alphabet)):
+                alphabet_dict[i] = alphabet[i]
+                idx += 1
+            for i in range(N): #standard approach
+                seq_index = np.argmax(x[i,:,:], axis=1)
+                seq = []
+                for s in seq_index:
+                    seq.append(alphabet_dict[s])
+                seq = ''.join(seq)
+                mave_df.at[i, 'x'] = seq
+
+        elif gpu is True: # convert entire matrix at once (~twice as fast as standard approach if running on GPUs)
+            seq_index_all = np.argmax(x, axis=-1)
+            num2alpha = dict(zip(range(0, len(alphabet)), alphabet))
+            seq_vector_all = np.vectorize(num2alpha.get)(seq_index_all)
+            seq_list_all = seq_vector_all.tolist()
+            dictionary_list = []
+            for i in range(0, N, 1):
+                dictionary_data = {0: ''.join(seq_list_all[i])}
+                dictionary_list.append(dictionary_data)
+            mave_df['x'] = pd.DataFrame.from_dict(dictionary_list)
+
+        return mave_df
+    
+
+    def train(self, x, y, learning_rate=None, epochs=None, batch_size=None, early_stopping=None,
+              patience=None, restore_best_weights=None, rnd_seed=None, save_dir=None, verbose=1):
+
+        # convert matrix of one-hots into sequence dataframe
+        if verbose:
+            print('  Creating sequence dataframe...')
+            print('')
+        mave_df = self.dataframe(x, y, alphabet=self.alphabet, gpu=self.gpu)
+        if verbose:
+            print(mave_df)
+
+        if self.deduplicate:
+            mave_df.drop_duplicates(['y', 'x'], inplace=True, keep='first')
+
+        x = x.reshape(x.shape[0], -1)
+        self.model = Lasso(alpha=self.alpha).fit(x, y)
+
+        return (self.model, mave_df)
+    
+
+    def get_params(self, gauge=None, save_dir=None):
+        """Function to return trained parameters from the Lasso model.
+
+        Parameters
+        ----------
+        gauge : None
+            None, to match output of MAVE-NN get_params()
+        save_dir : str
+            Directory for saving figures to file.
+        
+        Returns
+        -------
+        tuple 
+            theta_0     :   None
+                None, to match output of MAVE-NN get_params()
+            theta_lc    :   numpy.ndarray
+                Additive terms in trained parameters (shape : (L,C)).
+            theta_lclc  :   None
+                None, to match output of MAVE-NN get_params()
+        """
+        coef = self.model.coef_
+        #yhat = self.model.predict(x) # run inference on dataset
+
+        theta_lc = coef.reshape((self.L, self.A))
+
+        if save_dir is not None:
+            np.save(os.path.join(save_dir, 'theta_lc.npy'), theta_lc)
+
+        return (None, theta_lc, None)
+    
+
+    def get_logo(self, full_length=None, view_window=None):
+
+        # insert the (potentially-delimited) additive logo back into the max-length sequence
+        if full_length is None:
+            full_length = self.L
+        additive_logo = self.get_params(self.model)[1]
+        if view_window is not None:
+            additive_logo_zeros = np.zeros(shape=(full_length, self.A))
+            additive_logo_zeros[view_window[0]:view_window[1], :] = additive_logo
+            additive_logo = additive_logo_zeros
+
+        return additive_logo
+    
+
 
 class SurrogateRidgeCV(SurrogateBase):
     """Module for linear surrogate model (no GE or noise models) using sklearn RidgeCV.
@@ -244,7 +371,7 @@ class SurrogateRidgeCV(SurrogateBase):
             mave_df.drop_duplicates(['y', 'x'], inplace=True, keep='first')
 
         x = x.reshape(x.shape[0], -1)
-        self.model = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1], cv=5).fit(x, y)
+        self.model = RidgeCV(alphas=self.alphas, cv=self.cv).fit(x, y)
 
         return (self.model, mave_df)
     
