@@ -67,7 +67,8 @@ SQUID provides a simple interface that takes as input a sequence-based deep-lear
 - [Additive (local) surrogate modeling with DeepSTARR](https://colab.research.google.com/drive/12HR8Vu_8ji3Ac1wli4wgqx1J0YB73JF_?usp=sharing)
 - [Pairwise (local) surrogate modeling with ResidualBind-32](https://colab.research.google.com/drive/1eKC78YE2l49mQFOlnA9Xr1Y9IO121Va5?usp=sharing)
 - [Variant effect (local) prediction with DeepSTARR–Kipoi](https://colab.research.google.com/drive/1wtpT1FF5nu1etTDOaV3A7ByXhuLqK071?usp=sharing)
-	
+- [Basic linear modeling using MAVE-NN, LIME and RidgeCV](https://colab.research.google.com/drive/1bcHSRxPy02pXHg9xZ1TjmjYro2ZZe25R?usp=sharing)
+
 
 **Python script examples** are provided in the `examples/` folder for locally running SQUID and exporting outputs to file. Additional dependencies for these examples may be required and outlined at the top of each script. Examples include:
 - [Variant effect (local) prediction with DeepSTARR–Kipoi](https://github.com/evanseitz/squid-nn/blob/master/examples/example_variant_effect.py)
