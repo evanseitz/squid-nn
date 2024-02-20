@@ -8,7 +8,7 @@ try:
 except ImportError:
     pass
 try:
-    from sklearn.linear_model import Lasso, RidgeCV
+    from sklearn.linear_model import Lasso, LassoLarsCV, RidgeCV
 except ImportError:
     pass
 
@@ -372,6 +372,148 @@ class SurrogateRidgeCV(SurrogateBase):
 
         x = x.reshape(x.shape[0], -1)
         self.model = RidgeCV(alphas=self.alphas, cv=self.cv).fit(x, y)
+
+        return (self.model, mave_df)
+    
+
+    def get_params(self, gauge=None, save_dir=None):
+        """Function to return trained parameters from the RidgeCV model.
+
+        Parameters
+        ----------
+        gauge : None
+            None, to match output of MAVE-NN get_params()
+        save_dir : str
+            Directory for saving figures to file.
+        
+        Returns
+        -------
+        tuple 
+            theta_0     :   None
+                None, to match output of MAVE-NN get_params()
+            theta_lc    :   numpy.ndarray
+                Additive terms in trained parameters (shape : (L,C)).
+            theta_lclc  :   None
+                None, to match output of MAVE-NN get_params()
+        """
+        coef = self.model.coef_
+        #yhat = self.model.predict(x) # run inference on dataset
+
+        theta_lc = coef.reshape((self.L, self.A))
+
+        if save_dir is not None:
+            np.save(os.path.join(save_dir, 'theta_lc.npy'), theta_lc)
+
+        return (None, theta_lc, None)
+    
+
+    def get_logo(self, full_length=None, view_window=None):
+
+        # insert the (potentially-delimited) additive logo back into the max-length sequence
+        if full_length is None:
+            full_length = self.L
+        additive_logo = self.get_params(self.model)[1]
+        if view_window is not None:
+            additive_logo_zeros = np.zeros(shape=(full_length, self.A))
+            additive_logo_zeros[view_window[0]:view_window[1], :] = additive_logo
+            additive_logo = additive_logo_zeros
+
+        return additive_logo
+
+
+
+class SurrogateLIME(SurrogateBase):
+    """Module for linear surrogate model (no GE or noise models) using LIME.
+    For more information, see https://arxiv.org/pdf/1602.04938.pdf and
+    https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LassoLarsCV.html
+
+    Parameters
+    ----------
+    k : int
+        The desired number of nonzero weights
+
+    Returns
+    -------
+    sklearn.Model
+    """
+    def __init__(self, input_shape, num_tasks, k=20,
+                 deduplicate=True, alphabet=['A','C','G','T'], gpu=True):
+
+        self.N, self.L, self.A = input_shape
+        self.num_tasks = num_tasks
+        self.k = k
+        self.alphabet = alphabet
+        self.deduplicate = deduplicate
+        self.gpu = gpu
+
+
+    def dataframe(self, x, y, alphabet, gpu):
+        
+        N = x.shape[0]
+        mave_df = pd.DataFrame(columns = ['y', 'x'], index=range(N))
+        mave_df['y'] = y
+        
+        if gpu is False:
+            alphabet_dict = {}
+            idx = 0
+            for i in range(len(alphabet)):
+                alphabet_dict[i] = alphabet[i]
+                idx += 1
+            for i in range(N): #standard approach
+                seq_index = np.argmax(x[i,:,:], axis=1)
+                seq = []
+                for s in seq_index:
+                    seq.append(alphabet_dict[s])
+                seq = ''.join(seq)
+                mave_df.at[i, 'x'] = seq
+
+        elif gpu is True: # convert entire matrix at once (~twice as fast as standard approach if running on GPUs)
+            seq_index_all = np.argmax(x, axis=-1)
+            num2alpha = dict(zip(range(0, len(alphabet)), alphabet))
+            seq_vector_all = np.vectorize(num2alpha.get)(seq_index_all)
+            seq_list_all = seq_vector_all.tolist()
+            dictionary_list = []
+            for i in range(0, N, 1):
+                dictionary_data = {0: ''.join(seq_list_all[i])}
+                dictionary_list.append(dictionary_data)
+            mave_df['x'] = pd.DataFrame.from_dict(dictionary_list)
+
+        return mave_df
+    
+
+    def train(self, x, y, learning_rate=None, epochs=None, batch_size=None, early_stopping=None,
+              patience=None, restore_best_weights=None, rnd_seed=None, save_dir=None, verbose=1):
+
+        # convert matrix of one-hots into sequence dataframe
+        if verbose:
+            print('  Creating sequence dataframe...')
+            print('')
+        mave_df = self.dataframe(x, y, alphabet=self.alphabet, gpu=self.gpu)
+        if verbose:
+            print(mave_df)
+
+        if self.deduplicate:
+            mave_df.drop_duplicates(['y', 'x'], inplace=True, keep='first')
+
+        x = x.reshape(x.shape[0], -1)
+
+        models = LassoLarsCV(cv=None).fit(x, y)
+
+        alphas = models.alphas_
+        nonzero_weights = np.apply_along_axis(np.count_nonzero, 0, models.coef_path_)
+        selected_alpha_idx = np.where(nonzero_weights == self.k)[0][0]
+        selected_alpha = alphas[selected_alpha_idx]
+
+        # get the coefficients of the model with k nonzero features
+        coef = models.coef_path_[:,selected_alpha_idx]
+
+        # mask out all zeroed features
+        zeros_index = np.where(coef==0)
+        x_masked = x.copy()
+        x_masked[:, zeros_index] = 0
+
+        # refit the data on the masked set using least squares linear regression
+        self.model = Lasso(alpha=0.).fit(x_masked, y)
 
         return (self.model, mave_df)
     
