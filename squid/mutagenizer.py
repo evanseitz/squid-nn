@@ -146,9 +146,12 @@ class TwoHotMutagenesis(BaseMutagenesis):
         # mutagenize each sequence based on number of mutations; i.e., samples from alphabet pool
         one_hot = np.zeros(shape=(num_sim, L, A))
         for i, num_mut in enumerate(tqdm(num_muts, desc="Mutagenesis")):
-            options_list = choice(alphabet_pool, size=num_mut, replace=True) # sample 'num_mut' characters from alphabet_pool with replacement
-            mut_seq = ''.join(swap_elements(seq, options_list))
-            one_hot[i,:,:] = seq2twohot(mut_seq)
+            if i == 0:
+                one_hot[i,:,:] = seq2twohot(''.join(seq))
+            else:
+                options_list = choice(alphabet_pool, size=num_mut, replace=True) # sample 'num_mut' characters from alphabet_pool with replacement
+                mut_seq = ''.join(swap_elements(seq, options_list))
+                one_hot[i,:,:] = seq2twohot(mut_seq)
 
         return one_hot
 
