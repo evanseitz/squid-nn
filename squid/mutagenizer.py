@@ -95,6 +95,62 @@ class CombinatorialMutagenesis():
             one_hot[i,:,:] = seq2oh(seqs[i], alphabet=list(range(A)))
 
         return one_hot
+    
+
+class TwoHotMutagenesis():
+    """Module to perform random mutagenesis using two-hot encoding.
+    That is, encode each individual nucleotide at a given position
+    using a one-hot encoding scheme, then represent the unphased
+    diploid sequence as the sum of the two one-hot encoded nucleotides
+    at each position. The sequence "AYCR", for example, would be encoded as:
+    [[2, 0, 0, 0], [0, 1, 0, 1], [0, 2, 0, 0], [1, 0, 1, 0]].
+
+    Returns
+    ----------
+    numpy.ndarray
+        Batch of one-hot sequences with random mutagenesis applied, with alphabet:
+        {A, C, G, T, R (A/G), Y (C/T), S (C/G), W (A/T), K (G/T), M (A/C)}, such that
+        heterozygous positions are represented using the IUPAC ambiguity codes.
+    """
+    
+    def __init__(self, mut_rate, uniform=False):
+        self.mut_rate = mut_rate
+        self.uniform = uniform
+
+    def __call__(self, x, num_sim):
+        from numpy.random import choice
+        from numpy.random import poisson
+
+        def swap_elements(x, t):
+            """Per iteration, use numpy.random.choice to randomly select elements where
+            replacements will occur in the original list. Then zip those indices
+            against the values used for the substitution and apply the replacements.
+            """
+            new_x = x[:]
+            for idx, value in zip(choice(range(len(x)), size=len(t), replace=False), t):
+                new_x[idx] = value
+            return new_x
+
+        L, A = x.shape # ensure A=4 for this module
+        alphabet_pool = ['A', 'C', 'G', 'T', 'R', 'Y', 'S', 'W', 'K', 'M'] # pool for selecting characters
+        seq = twohot2seq(x)
+        seq = [*seq]
+
+        # set up number of mutations to sample for each sequence
+        avg_num_mut = int(np.ceil(self.mut_rate*L))
+        if self.uniform:
+            num_muts = int(avg_num_mut*np.ones((num_sim,), dtype=int)) + 1
+        else:
+            num_muts = poisson(avg_num_mut, (num_sim, 1))[:,0] + 1
+
+        # mutagenize each sequence based on number of mutations; i.e., samples from alphabet pool
+        one_hot = np.zeros(shape=(num_sim, L, A))
+        for i, num_mut in enumerate(tqdm(num_muts, desc="Mutagenesis")):
+            options_list = choice(alphabet_pool, size=num_mut, replace=True) # sample 'num_mut' characters from alphabet_pool with replacement
+            mut_seq = ''.join(swap_elements(seq, options_list))
+            one_hot[i,:,:] = seq2twohot(mut_seq)
+
+        return one_hot
 
 
 """
@@ -159,3 +215,78 @@ def apply_mut_by_seq_index(x_index, shape, num_muts):
             # create one-hot from index
             one_hot[i,:,:] = np.eye(A)[seq_index]
     return one_hot.astype('uint8')
+
+
+def twohot2seq(one_hot):
+    """Function to convert two-hot encoding to a DNA sequence.
+
+    Parameters
+    ----------
+    one_hot : numpy.ndarray
+        Input one-hot encoding of sequence (shape : (L,C))
+
+    Returns
+    -------
+    seq : string
+        Input sequence with length L.
+    """
+    seq = []
+    for i in range(one_hot.shape[0]):
+
+        if np.array_equal(one_hot[i,:], np.array([2, 0, 0, 0])):
+            seq.append('A')
+        elif np.array_equal(one_hot[i,:], np.array([0, 2, 0, 0])):
+            seq.append('C')
+        elif np.array_equal(one_hot[i,:], np.array([0, 0, 2, 0])):
+            seq.append('G')
+        elif np.array_equal(one_hot[i,:], np.array([0, 0, 0, 2])):
+            seq.append('T')
+        elif np.array_equal(one_hot[i,:], np.array([0, 0, 0, 0])):
+            seq.append('N')
+        elif np.array_equal(one_hot[i,:], np.array([1, 1, 0, 0])):
+            seq.append('M')
+        elif np.array_equal(one_hot[i,:], np.array([1, 0, 1, 0])):
+            seq.append('R')
+        elif np.array_equal(one_hot[i,:],np.array([1, 0, 0, 1])):
+            seq.append('W')
+        elif np.array_equal(one_hot[i,:], np.array([0, 1, 1, 0])):
+            seq.append('S')
+        elif np.array_equal(one_hot[i,:], np.array([0, 1, 0, 1])):
+            seq.append('Y')
+        elif np.array_equal(one_hot[i,:], np.array([0, 0, 1, 1])):
+            seq.append('K')
+    seq = ''.join(seq)
+    return seq
+
+
+def seq2twohot(seq):
+    """Function to convert heterozygous DNA sequence to two-hot encoding.
+
+    Parameters
+    ----------
+    seq : string
+        Input sequence with length L.
+
+    Returns
+    -------
+    one_hot : numpy.ndarray
+        Input one-hot encoding of sequence (shape : (L,C))
+    """
+    seq_list = list(seq.upper()) # get sequence into an array
+    # one hot the sequence
+    encoding = {
+        "A": np.array([2, 0, 0, 0]),
+        "C": np.array([0, 2, 0, 0]),
+        "G": np.array([0, 0, 2, 0]),
+        "T": np.array([0, 0, 0, 2]),
+        "N": np.array([0, 0, 0, 0]),
+        "M": np.array([1, 1, 0, 0]),
+        "R": np.array([1, 0, 1, 0]),
+        "W": np.array([1, 0, 0, 1]),
+        "S": np.array([0, 1, 1, 0]),
+        "Y": np.array([0, 1, 0, 1]),
+        "K": np.array([0, 0, 1, 1]),
+    }
+    one_hot = [encoding.get(seq, seq) for seq in seq_list]
+    one_hot = np.array(one_hot)
+    return one_hot
