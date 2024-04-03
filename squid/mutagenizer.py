@@ -131,8 +131,6 @@ class TwoHotMutagenesis(BaseMutagenesis):
                 new_x[idx] = value
             return new_x
 
-        print('!', x.shape)
-
         L, A = x.shape # ensure A=4 for this module
         alphabet_pool = ['A', 'C', 'G', 'T', 'R', 'Y', 'S', 'W', 'K', 'M'] # pool for selecting characters
         seq = twohot2seq(x)
