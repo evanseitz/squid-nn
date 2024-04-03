@@ -97,7 +97,7 @@ class CombinatorialMutagenesis():
         return one_hot
     
 
-class TwoHotMutagenesis():
+class TwoHotMutagenesis(BaseMutagenesis):
     """Module to perform random mutagenesis using two-hot encoding.
     That is, encode each individual nucleotide at a given position
     using a one-hot encoding scheme, then represent the unphased
