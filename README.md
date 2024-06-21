@@ -88,12 +88,10 @@ If this code is useful in your work, please cite our paper.
 @article{seitz2023_squid,
 	author = {Evan E Seitz and David M McCandlish and Justin B Kinney and Peter K Koo},
 	title = {Interpreting cis-regulatory mechanisms from genomic deep neural networks using surrogate models},
-	year = {2023},
-	doi = {10.1101/2023.11.14.567120},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2023/11/16/2023.11.14.567120},
-	eprint = {https://www.biorxiv.org/content/early/2023/11/16/2023.11.14.567120.full.pdf},
-	journal = {bioRxiv}
+	year = {2024},
+	doi = {10.1038/s42256-024-00851-5},
+	URL = {https://doi.org/10.1038/s42256-024-00851-5},
+	journal = {Nature Machine Intelligence}
 }
 ```
 
