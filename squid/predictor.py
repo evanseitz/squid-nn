@@ -172,8 +172,10 @@ def predict_in_batches(x, x_ref, model_pred_fun, batch_size=None, task_idx=None,
 
     Parameters
     ----------
-    x : torch.Tensor
+    x : numpy.ndarray
         One-hot sequences (shape: (N, L, A)).
+    x_ref : numpy.ndarray
+        One-hot reference sequence (shape: (L, A)).
     model_pred_fun : function
         Built-in function for accessing model inference on inputs.
     batch_size : int

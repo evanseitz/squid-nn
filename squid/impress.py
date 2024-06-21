@@ -90,7 +90,7 @@ def plot_performance(model, info, save_dir=None):
     return fig 
 
 
-def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G','T'], fig_size=None, save_dir=None):
+def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G','T'], fig_size=None, save_dir=None, save_name=None):
     """Function for visualizing MAVE-NN additive model parameters.
 
     Parameters
@@ -111,7 +111,9 @@ def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G
     fig_size : [float, float]
         Width, height in inches for matplotlib.pyplot figure.
     save_dir : str
-        Directory for saving figures to file.
+        Directory for saving figure to file.
+    save_name : str
+        If save_dir is not None, save_name sets the filename for saving figure to file.
 
     Returns
     -------
@@ -139,16 +141,18 @@ def plot_additive_logo(logo, center=True, view_window=None, alphabet=['A','C','G
                     #font_name='Arial Rounded MT Bold'  # causes excess warnings on colab
                     )
     
-    if view_window is not None:
-        ax.set_xticks(np.arange(0, view_window[1]-view_window[0], 1))
-        ax.set_xticklabels(np.arange(view_window[0], view_window[1], 1))
+    #if view_window is not None: # adjust xticks and xticklabels to reflect the new delimited region
+        #ax.set_xticks(np.arange(0, view_window[1]-view_window[0], 1))
+        #ax.set_xticklabels(np.arange(view_window[0], view_window[1], 1))
 
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.set_ylabel('Additive effect')
     ax.set_xlabel('Nucleotide position')
     plt.tight_layout()
     if save_dir is not None:
-        plt.savefig(os.path.join(save_dir, 'additive_logo.png'), facecolor='w', dpi=200)
+        if save_name is None:
+            save_name = 'additive_logo'
+        plt.savefig(os.path.join(save_dir, '%s.png' % save_name), facecolor='w', dpi=200)
         plt.close()
     #else:
         #plt.show()
