@@ -66,34 +66,110 @@ class RandomMutagenesis(BaseMutagenesis):
 
 class CombinatorialMutagenesis():
     """Module for performing combinatorial mutagenesis.
+    
+    Parameters
+    ----------
+    max_order : int, optional
+        Maximum order of mutations to generate. If -1, generates all possible combinations.
+        If 1, generates only single mutations (all SNVs). If 2, generates single and double mutations, etc.
+        Must be less than or equal to sequence length L, or -1 for all combinations.
+        (defaults to -1)
+    batch_size : int, optional
+        Batch size for one-hot encoding conversion. If None, converts all at once.
+        For large sequences, using a batch size can help manage memory usage.
+        (defaults to None)
 
     Returns
     ----------
     numpy.ndarray
-        Batch of one-hot sequences with combinatorial mutagenesis applied,
-        such that the number of sequences produced is the number of characters A
-        in the alphabet raised to the length L of the 'mut_window'.
+        Batch of one-hot sequences with combinatorial mutagenesis applied.
+        For max_order=-1: number of sequences is A^L
+        For max_order=k: number of sequences is 1 + sum(n_choose_r * (A-1)^r) for r in 1..k
+        where:
+        - L is sequence length
+        - A is alphabet size
+        - n_choose_r is the binomial coefficient (L choose r)
+        - The leading 1 accounts for the reference sequence
+        
+    Examples
+    --------
+    For L=4, A=4:
+    - max_order=1: 1 + C(4,1)*(3^1) = 1 + 12 = 13 sequences
+    - max_order=2: 1 + C(4,1)*(3^1) + C(4,2)*(3^2) = 1 + 12 + 54 = 67 sequences
+
+    Raises
+    ------
+    ValueError
+        If max_order is greater than sequence length L or less than -1
     """
+    def __init__(self, max_order=-1, batch_size=256):
+        if max_order < -1:
+            raise ValueError("max_order must be -1 or a non-negative integer")
+        self.max_order = max_order
+        self.batch_size = batch_size
 
-    def __call__(self, x, num_sim): # 'num_sim' will be replaced by A**L
-
+    def __call__(self, x, num_sim): # 'num_sim' will be ignored
         L, A = x.shape
+        
+        if self.max_order > L:
+            raise ValueError(f"max_order ({self.max_order}) cannot exceed sequence length ({L})")
+            
+        x_index = np.argmax(x, axis=1)  # Get reference sequence indices
+        from itertools import combinations, product
 
-        def seq2oh(seq, alphabet=['A','C','G','T']):   
-            L = len(seq)
-            one_hot = np.zeros(shape=(L,len(alphabet)), dtype=np.float32)
-            for idx, i in enumerate(seq):
-                for jdx, j in enumerate(alphabet):
-                    if i == j:
-                        one_hot[idx,jdx] = 1
-            return one_hot
-
-        from itertools import product
-        seqs = list(product(list(range(A)), repeat=L))
-        one_hot = np.zeros(shape=(int(A**L), L, A))
-        for i in tqdm(range(int(A**L)), desc="Mutagenesis"):
-            one_hot[i,:,:] = seq2oh(seqs[i], alphabet=list(range(A)))
-
+        # If max_order is -1, set it to L for complete enumeration
+        max_order = L if self.max_order == -1 else self.max_order
+        
+        # Pre-calculate total size and allocate array
+        total_variants = 1 + sum(  # +1 for reference sequence
+            len(list(combinations(range(L), order))) * (A-1)**order 
+            for order in range(1, max_order + 1)
+        )
+        all_variants = np.zeros((total_variants, L), dtype=np.int8)
+        all_variants[0] = x_index  # Add reference sequence
+        
+        # Pre-compute alternative bases for each position
+        alt_bases_lookup = {i: np.array([b for b in range(A) if b != base]) 
+                           for i, base in enumerate(x_index)}
+        
+        current_idx = 1  # Start after reference sequence
+        
+        # Generate variants for each order up to max_order
+        for order in range(1, max_order + 1):
+            n_positions = len(list(combinations(range(L), order)))
+            n_variants = n_positions * (A-1)**order
+            
+            with tqdm(total=n_variants, desc=f"Order {order} mutations") as pbar:
+                for pos in combinations(range(L), order):
+                    # Get pre-computed alternative bases for these positions
+                    alt_bases_per_pos = [alt_bases_lookup[p] for p in pos]
+                    
+                    # Generate all combinations at once for this position set
+                    alt_combos = np.array(list(product(*alt_bases_per_pos)))
+                    n_combos = len(alt_combos)
+                    
+                    # Create variants for all combinations at once
+                    new_seqs = np.tile(x_index, (n_combos, 1))
+                    new_seqs[:, pos] = alt_combos
+                    
+                    # Add to pre-allocated array
+                    all_variants[current_idx:current_idx + n_combos] = new_seqs
+                    current_idx += n_combos
+                    pbar.update(n_combos)
+        
+        print("Converting to one-hot encoding...")
+        if self.batch_size is None:
+            # Convert all at once
+            one_hot = np.eye(A, dtype=np.int8)[np.ascontiguousarray(all_variants)]
+        else:
+            # Convert in batches
+            n_sequences = len(all_variants)
+            one_hot = np.zeros((n_sequences, L, A), dtype=np.int8)
+            
+            for i in tqdm(range(0, n_sequences, self.batch_size), desc="One-hot encoding"):
+                batch_end = min(i + self.batch_size, n_sequences)
+                one_hot[i:batch_end] = np.eye(A, dtype=np.int8)[all_variants[i:batch_end]]
+        
         return one_hot
     
 
@@ -293,3 +369,38 @@ def seq2twohot(seq):
     one_hot = [encoding.get(seq, seq) for seq in seq_list]
     one_hot = np.array(one_hot)
     return one_hot
+
+
+def get_alternative_bases(ref_base, A):
+    """Get all possible alternative bases for a given reference base."""
+    return [b for b in range(A) if b != ref_base]
+
+
+
+if __name__ == "__main__":
+    # Create a sequence of all A's with configurable length
+    L = 100  # Change this value to test different lengths
+    A = 4  # Alphabet size (A,C,G,T)
+    
+    # Create one-hot encoding for sequence of all A's
+    x = np.zeros((L, A))
+    x[:, 0] = 1  # Set first position (A) to 1 for all positions
+    
+    # Test with different max_order values
+    for max_order in [2]:
+        mut = CombinatorialMutagenesis(max_order=max_order)
+        result = mut(x, num_sim=None)
+        
+        # Convert results back to sequences for easy viewing
+        sequences = []
+        nucleotides = ['A', 'C', 'G', 'T']
+        for seq in result:
+            seq_indices = np.argmax(seq, axis=1)
+            sequences.append(''.join([nucleotides[idx] for idx in seq_indices]))
+        
+        print(f"\nmax_order = {max_order}:")
+        print(f"Number of sequences generated: {len(sequences)}")
+        if len(sequences) < 20:  # Only print sequences if there aren't too many
+            print("Sequences:")
+            for seq in sequences:
+                print(seq)
