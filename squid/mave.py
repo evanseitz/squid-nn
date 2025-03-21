@@ -192,23 +192,12 @@ class InSilicoMAVE():
                 x_shuffle[:,:start_position,:],
                 x_mut,
                 x_shuffle[:,stop_position:,:]],
-                axis=1
-            )
+                axis=1)
         else:
-            if start_position == stop_position:
-                x_padded = np.concatenate([
-                    x_mut[:,:start_position,:],
-                    x_shuffle[:,start_position:start_position+1,:],
-                    x_mut[:,start_position:,:]], 
-                    axis=1
-                )
-            else:
-                x_padded = np.concatenate(
-                    [x_mut[:,:start_position,:],
-                    x_shuffle[:,start_position:stop_position,:],
-                    x_mut[:,stop_position:,:]],
-                    axis=1
-                )
+            x_padded = x_shuffle.copy()  # Start with shuffled sequence
+            # Insert pattern but preserve the region to randomize
+            x_padded[:, self.start_position:start_position, :] = x_mut[:, :start_position-self.start_position, :]
+            x_padded[:, stop_position+1:self.stop_position, :] = x_mut[:, stop_position-self.start_position+1:, :]
 
         return x_padded
     
@@ -394,4 +383,46 @@ def dinuc_shuffle(seq, num_shufs=None, rng=None):
         else:
             all_results[i] = tokens_to_one_hot(chars[result], one_hot_dim)
     return all_results if num_shufs else all_results[0]
+
+
+if __name__ == "__main__":
+    # Set random seed for reproducibility
+    np.random.seed(42)
+    random.seed(42)
+    
+    # Test setup
+    seq_length = 249
+    alphabet = ['A','C','G','T']
+    start_pos = seq_length//2
+    pattern = 'TGANTCA'
+    
+    # Create background sequence with pattern
+    bg_left = random.choices(str(''.join(alphabet)), k=start_pos)
+    bg_right = random.choices(str(''.join(alphabet)), k=seq_length - start_pos - len(pattern))
+    seq = ''.join(bg_left) + pattern + ''.join(bg_right)
+    x_ref = np.array([[1 if c == base else 0 for base in alphabet] for c in seq], dtype=np.uint8)
+    
+    # Test single position randomization
+    pattern_window = [start_pos, start_pos+len(pattern)]
+    inter_window = [start_pos+3, start_pos+3]  # Single N position
+    
+    mave = InSilicoMAVE(None, None, seq_length, pattern_window, True, inter_window, alphabet=alphabet)
+    x_window = mave.delimit_range(x_ref, pattern_window[0], pattern_window[1])
+    num_seqs = 5
+    
+    # Generate sequences with randomized N position
+    x_mut = np.tile(x_window[np.newaxis,:,:], (num_seqs,1,1))
+    x_padded = mave.pad_seq_random(x_mut, x_ref, inter_window[0], inter_window[1], inter=True)
+    
+    # Print shapes for debugging
+    print(f"x_ref shape: {x_ref.shape}")
+    print(f"x_window shape: {x_window.shape}")
+    print(f"x_mut shape: {x_mut.shape}")
+    print(f"x_padded shape: {x_padded.shape}")
+    
+    print(f"\nOriginal pattern: {pattern}")
+    print(f"Generated sequences at pattern position:")
+    for seq in x_padded:
+        pattern_seq = ''.join([alphabet[b] for b in np.argmax(seq[pattern_window[0]-3:pattern_window[1]+3], axis=1)])
+        print(pattern_seq)
 
