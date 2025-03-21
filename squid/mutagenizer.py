@@ -35,6 +35,9 @@ class RandomMutagenesis(BaseMutagenesis):
         Mutation rate for random mutagenesis (defaults to 0.1).
     uniform : bool
         uniform (True), Poisson (False); sets the number of mutations per sequence.
+    seed : int, optional
+        Random seed for reproducibility. If None, results will not be reproducible.
+        (defaults to None)
 
     Returns
     -------
@@ -42,11 +45,14 @@ class RandomMutagenesis(BaseMutagenesis):
         Batch of one-hot sequences with random mutagenesis applied.
     """
 
-    def __init__(self, mut_rate, uniform=False):
+    def __init__(self, mut_rate, uniform=False, seed=None):
         self.mut_rate = mut_rate
         self.uniform = uniform
+        self.seed = seed
 
     def __call__(self, x, num_sim):
+        if self.seed is not None:
+            np.random.seed(self.seed)
 
         L, A = x.shape
         avg_num_mut = int(np.ceil(self.mut_rate*L))
@@ -78,6 +84,9 @@ class CombinatorialMutagenesis():
         Batch size for one-hot encoding conversion. If None, converts all at once.
         For large sequences, using a batch size can help manage memory usage.
         (defaults to None)
+    seed : int, optional
+        Random seed for reproducibility. If None, results will not be reproducible.
+        (defaults to None)
 
     Returns
     ----------
@@ -102,13 +111,17 @@ class CombinatorialMutagenesis():
     ValueError
         If max_order is greater than sequence length L or less than -1
     """
-    def __init__(self, max_order=-1, batch_size=256):
+    def __init__(self, max_order=-1, batch_size=256, seed=None):
         if max_order < -1:
             raise ValueError("max_order must be -1 or a non-negative integer")
         self.max_order = max_order
         self.batch_size = batch_size
+        self.seed = seed
 
     def __call__(self, x, num_sim): # 'num_sim' will be ignored
+        if self.seed is not None:
+            np.random.seed(self.seed)
+            
         L, A = x.shape
         
         if self.max_order > L:
@@ -181,6 +194,17 @@ class TwoHotMutagenesis(BaseMutagenesis):
     at each position. The sequence "AYCR", for example, would be encoded as:
     [[2, 0, 0, 0], [0, 1, 0, 1], [0, 2, 0, 0], [1, 0, 1, 0]].
 
+    Parameters
+    ----------
+    mut_rate : float
+        Mutation rate for random mutagenesis.
+    uniform : bool, optional
+        uniform (True), Poisson (False); sets the number of mutations per sequence.
+        (defaults to False)
+    seed : int, optional
+        Random seed for reproducibility. If None, results will not be reproducible.
+        (defaults to None)
+
     Returns
     ----------
     numpy.ndarray
@@ -189,11 +213,15 @@ class TwoHotMutagenesis(BaseMutagenesis):
         heterozygous positions are represented using the IUPAC ambiguity codes.
     """
     
-    def __init__(self, mut_rate, uniform=False):
+    def __init__(self, mut_rate, uniform=False, seed=None):
         self.mut_rate = mut_rate
         self.uniform = uniform
+        self.seed = seed
 
     def __call__(self, x, num_sim):
+        if self.seed is not None:
+            np.random.seed(self.seed)
+            
         from numpy.random import choice
         from numpy.random import poisson
 
@@ -378,18 +406,46 @@ def get_alternative_bases(ref_base, A):
 
 
 if __name__ == "__main__":
-    # Create a sequence of all A's with configurable length
-    L = 100  # Change this value to test different lengths
-    A = 4  # Alphabet size (A,C,G,T)
-    
-    # Create one-hot encoding for sequence of all A's
-    x = np.zeros((L, A))
-    x[:, 0] = 1  # Set first position (A) to 1 for all positions
-    
-    # Test with different max_order values
-    for max_order in [2]:
-        mut = CombinatorialMutagenesis(max_order=max_order)
-        result = mut(x, num_sim=None)
+    if 0:
+        print("\nTesting CombinatorialMutagenesis:")
+        L = 100  # Change this value to test different lengths
+        A = 4  # Alphabet size (A,C,G,T)
+        
+        # Create one-hot encoding for sequence of all A's
+        x = np.zeros((L, A))
+        x[:, 0] = 1  # Set first position (A) to 1 for all positions
+        
+        # Test with different max_order values
+        for max_order in [2]:
+            mut = CombinatorialMutagenesis(max_order=max_order)
+            result = mut(x, num_sim=None)
+            
+            # Convert results back to sequences for easy viewing
+            sequences = []
+            nucleotides = ['A', 'C', 'G', 'T']
+            for seq in result:
+                seq_indices = np.argmax(seq, axis=1)
+                sequences.append(''.join([nucleotides[idx] for idx in seq_indices]))
+            
+            print(f"\nmax_order = {max_order}:")
+            print(f"Number of sequences generated: {len(sequences)}")
+            if len(sequences) < 20:  # Only print sequences if there aren't too many
+                print("Sequences:")
+                for seq in sequences:
+                    print(seq)
+
+    else:
+        print("\nTesting RandomMutagenesis:")
+        L = 20  # sequence length
+        A = 4   # alphabet size
+        
+        # Create one-hot encoding for sequence of all A's
+        x = np.zeros((L, A))
+        x[:, 0] = 1  # Set first position (A) to 1 for all positions
+        
+        # Test with Poisson mutations, 10% mutation rate
+        mut = RandomMutagenesis(mut_rate=0.1, uniform=False, seed=42)
+        result = mut(x, num_sim=10)
         
         # Convert results back to sequences for easy viewing
         sequences = []
@@ -398,9 +454,7 @@ if __name__ == "__main__":
             seq_indices = np.argmax(seq, axis=1)
             sequences.append(''.join([nucleotides[idx] for idx in seq_indices]))
         
-        print(f"\nmax_order = {max_order}:")
-        print(f"Number of sequences generated: {len(sequences)}")
-        if len(sequences) < 20:  # Only print sequences if there aren't too many
-            print("Sequences:")
-            for seq in sequences:
-                print(seq)
+        print(f"Input sequence: {'A' * L}")
+        print("\nMutated sequences:")
+        for seq in sequences:
+            print(seq)
