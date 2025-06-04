@@ -80,6 +80,11 @@ class CombinatorialMutagenesis():
         If 1, generates only single mutations (all SNVs). If 2, generates single and double mutations, etc.
         Must be less than or equal to sequence length L, or -1 for all combinations.
         (defaults to -1)
+    mut_window : [int, int], optional
+        Index of start and stop position along sequence to probe for mutations.
+        If provided, only generates mutations within this window (inclusive on both ends).
+        For example, mut_window=[4,6] will generate mutations at positions 4, 5, and 6.
+        (defaults to None, which means the entire sequence is considered)
     batch_size : int, optional
         Batch size for one-hot encoding conversion. If None, converts all at once.
         For large sequences, using a batch size can help manage memory usage.
@@ -111,10 +116,11 @@ class CombinatorialMutagenesis():
     ValueError
         If max_order is greater than sequence length L or less than -1
     """
-    def __init__(self, max_order=-1, batch_size=256, seed=None):
+    def __init__(self, max_order=-1, mut_window=None, batch_size=256, seed=None):
         if max_order < -1:
             raise ValueError("max_order must be -1 or a non-negative integer")
         self.max_order = max_order
+        self.mut_window = mut_window
         self.batch_size = batch_size
         self.seed = seed
 
@@ -124,18 +130,31 @@ class CombinatorialMutagenesis():
             
         L, A = x.shape
         
-        if self.max_order > L:
-            raise ValueError(f"max_order ({self.max_order}) cannot exceed sequence length ({L})")
+        # If mut_window is provided, we'll only consider positions within that window
+        if self.mut_window is not None:
+            start_pos, stop_pos = self.mut_window
+            stop_pos = stop_pos + 1  # Make stop_pos exclusive to include the last position
+            window_length = stop_pos - start_pos
+            if window_length <= 0:
+                raise ValueError("mut_window stop_pos must be greater than or equal to start_pos")
+            if start_pos < 0 or stop_pos > L:
+                raise ValueError(f"mut_window must be within sequence bounds [0, {L}]")
+        else:
+            start_pos, stop_pos = 0, L
+            window_length = L
+            
+        if self.max_order > window_length:
+            raise ValueError(f"max_order ({self.max_order}) cannot exceed window length ({window_length})")
             
         x_index = np.argmax(x, axis=1)  # Get reference sequence indices
         from itertools import combinations, product
 
-        # If max_order is -1, set it to L for complete enumeration
-        max_order = L if self.max_order == -1 else self.max_order
+        # If max_order is -1, set it to window_length for complete enumeration
+        max_order = window_length if self.max_order == -1 else self.max_order
         
         # Pre-calculate total size and allocate array
         total_variants = 1 + sum(  # +1 for reference sequence
-            len(list(combinations(range(L), order))) * (A-1)**order 
+            len(list(combinations(range(start_pos, stop_pos), order))) * (A-1)**order 
             for order in range(1, max_order + 1)
         )
         all_variants = np.zeros((total_variants, L), dtype=np.int8)
@@ -143,17 +162,17 @@ class CombinatorialMutagenesis():
         
         # Pre-compute alternative bases for each position
         alt_bases_lookup = {i: np.array([b for b in range(A) if b != base]) 
-                           for i, base in enumerate(x_index)}
+                           for i, base in enumerate(x_index[start_pos:stop_pos], start=start_pos)}
         
         current_idx = 1  # Start after reference sequence
         
         # Generate variants for each order up to max_order
         for order in range(1, max_order + 1):
-            n_positions = len(list(combinations(range(L), order)))
+            n_positions = len(list(combinations(range(start_pos, stop_pos), order)))
             n_variants = n_positions * (A-1)**order
             
             with tqdm(total=n_variants, desc=f"Order {order} mutations") as pbar:
-                for pos in combinations(range(L), order):
+                for pos in combinations(range(start_pos, stop_pos), order):
                     # Get pre-computed alternative bases for these positions
                     alt_bases_per_pos = [alt_bases_lookup[p] for p in pos]
                     
@@ -406,9 +425,9 @@ def get_alternative_bases(ref_base, A):
 
 
 if __name__ == "__main__":
-    if 0:
+    if 1:
         print("\nTesting CombinatorialMutagenesis:")
-        L = 100  # Change this value to test different lengths
+        L = 10  # Change this value to test different lengths
         A = 4  # Alphabet size (A,C,G,T)
         
         # Create one-hot encoding for sequence of all A's
@@ -417,7 +436,7 @@ if __name__ == "__main__":
         
         # Test with different max_order values
         for max_order in [2]:
-            mut = CombinatorialMutagenesis(max_order=max_order)
+            mut = CombinatorialMutagenesis(max_order=max_order, mut_window=[4, 6])
             result = mut(x, num_sim=None)
             
             # Convert results back to sequences for easy viewing
@@ -429,7 +448,7 @@ if __name__ == "__main__":
             
             print(f"\nmax_order = {max_order}:")
             print(f"Number of sequences generated: {len(sequences)}")
-            if len(sequences) < 20:  # Only print sequences if there aren't too many
+            if len(sequences) < 50:  # Only print sequences if there aren't too many
                 print("Sequences:")
                 for seq in sequences:
                     print(seq)
