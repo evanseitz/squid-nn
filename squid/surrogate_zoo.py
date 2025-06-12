@@ -1,16 +1,26 @@
 import os
 import numpy as np
 import pandas as pd
-from tensorflow import keras
-from tensorflow.keras.regularizers import l1_l2
+
+# Optional tensorflow imports
+try:
+    from tensorflow import keras
+    from tensorflow.keras.regularizers import l1_l2
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
+
 try:
     import mavenn
+    MAVENN_AVAILABLE = True
 except ImportError:
-    pass
+    MAVENN_AVAILABLE = False
+
 try:
     from sklearn.linear_model import Lasso, LassoLarsCV, RidgeCV
+    SKLEARN_AVAILABLE = True
 except ImportError:
-    pass
+    SKLEARN_AVAILABLE = False
 
 
 
@@ -45,7 +55,9 @@ class SurrogateLinear(SurrogateBase):
     """
     def __init__(self, input_shape, num_tasks, l1=1e-8, l2=1e-4,
                  alphabet=['A','C','G','T']):
-
+        if not TENSORFLOW_AVAILABLE:
+            raise ImportError("TensorFlow is required for SurrogateLinear model. Please install tensorflow.")
+        
         self.model = self.build(input_shape, num_tasks, l1, l2)
         self.alphabet = alphabet
 
@@ -611,6 +623,11 @@ class SurrogateMAVENN(SurrogateBase):
                  linearity='nonlinear', noise='SkewedT', noise_order=2, reg_strength=0.1,
                  hidden_nodes=50, alphabet=['A','C','G','T'], deduplicate=True, gpu=True):
         
+        if not TENSORFLOW_AVAILABLE:
+            raise ImportError("TensorFlow is required for SurrogateMAVENN model. Please install tensorflow.")
+        if not MAVENN_AVAILABLE:
+            raise ImportError("MAVE-NN is required for SurrogateMAVENN model. Please install mavenn.")
+            
         self.N, self.L, self.A = input_shape
         self.num_tasks = num_tasks
         self.gpmap = gpmap
