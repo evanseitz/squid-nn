@@ -17,7 +17,7 @@ class BasePredictor():
     def __init__(self):
         raise NotImplementedError()
 
-    def __call__(self, x, x_ref):
+    def __call__(self, x, x_ref=None, save_window=None):
         raise NotImplementedError()
 
 
@@ -46,7 +46,7 @@ class ScalarPredictor(BasePredictor):
         self.kwargs = kwargs
         self.batch_size = batch_size
 
-    def __call__(self, x, x_ref, save_window):
+    def __call__(self, x, x_ref=None, save_window=None):
         pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=save_window, **self.kwargs)
         return pred[self.task_idx]
 
@@ -80,7 +80,7 @@ class ProfilePredictor(BasePredictor):
         BasePredictor.save_dir = save_dir
         self.kwargs = kwargs
 
-    def __call__(self, x, x_ref, save_window):
+    def __call__(self, x, x_ref=None, save_window=None):
         # get model predictions (all tasks)
         pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=save_window, **self.kwargs)
 
@@ -136,7 +136,7 @@ class BPNetPredictor(BasePredictor):
                 return pred_scalars
             self.reduce_fun = contribution_score
 
-    def __call__(self, x, x_ref, save_window):
+    def __call__(self, x, x_ref=None, save_window=None):
         # get model predictions (all tasks)
         pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, task_idx=self.task_idx, save_window=save_window, **self.kwargs)
 
@@ -167,20 +167,20 @@ class CustomPredictor():
 ################################################################################
 
 
-def predict_in_batches(x, x_ref, model_pred_fun, batch_size=None, task_idx=None, save_window=None, **kwargs):
+def predict_in_batches(x, x_ref=None, model_pred_fun=None, batch_size=None, task_idx=None, save_window=None, **kwargs):
     """Function to compute model predictions in batch mode.
 
     Parameters
     ----------
     x : numpy.ndarray
         One-hot sequences (shape: (N, L, A)).
-    x_ref : numpy.ndarray
-        One-hot reference sequence (shape: (L, A)).
+    x_ref : numpy.ndarray, optional
+        One-hot reference sequence (shape: (L, A)). Required if save_window is not None.
     model_pred_fun : function
         Built-in function for accessing model inference on inputs.
     batch_size : int
         The number of predictions per batch of model inference.
-    save_window : [int, int]
+    save_window : [int, int], optional
         Window used for delimiting sequences that are exported in 'x_mut' array
 
     Returns
@@ -190,6 +190,8 @@ def predict_in_batches(x, x_ref, model_pred_fun, batch_size=None, task_idx=None,
     """
 
     if save_window is not None:
+        if x_ref is None:
+            raise ValueError("x_ref must be provided when save_window is not None")
         x_ref = x_ref[np.newaxis,:].astype('uint8')
 
     N, L, A = x.shape
