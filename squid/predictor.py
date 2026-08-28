@@ -31,13 +31,15 @@ class ScalarPredictor(BasePredictor):
         Function for returning model predictions.
     task_idx : int
         Task index corresponding to a specific output head.
+        For a single Keras head of shape (batch, n_tasks), this is the
+        column to keep. For a list of output heads, this is the head index.
     batch_size : int
         The number of predictions per batch.
 
     Returns
     -------
-    torch.Tensor
-        Batch of scalar predictions corresponding to inputs.
+    numpy.ndarray
+        Scalar predictions with shape (N, 1), one value per sequence for ``task_idx``.
     """
 
     def __init__(self, pred_fun, task_idx=0, batch_size=64, save_window=None, **kwargs):
@@ -48,7 +50,7 @@ class ScalarPredictor(BasePredictor):
 
     def __call__(self, x, x_ref=None, save_window=None):
         pred = predict_in_batches(x, x_ref, self.pred_fun, batch_size=self.batch_size, save_window=save_window, **self.kwargs)
-        return pred[self.task_idx]
+        return _select_scalar_task(pred, self.task_idx, n_samples=x.shape[0])
 
 
 
@@ -167,6 +169,71 @@ class CustomPredictor():
 ################################################################################
 
 
+def _index_prediction_task(p, task_idx):
+    """Select one task from a batch of model outputs.
+
+    Keras models return different layouts:
+    - dict (e.g. BPNet/Kipoi): keyed by task name
+    - list/tuple of heads (e.g. DeepSTARR): one array per output head
+    - ndarray (e.g. DeepZebraFish): sample-first (batch, n_tasks, ...)
+    """
+    if isinstance(p, (dict, list, tuple)):
+        return p[task_idx]
+    p = np.asarray(p)
+    if p.ndim >= 2:
+        return p[:, task_idx]
+    return p[task_idx]
+
+
+def _stack_batch_preds(pred_chunks):
+    """Stack per-batch outputs along the sample axis.
+
+    Multi-output Keras models return a list of heads, which numpy stores as
+    (n_tasks, batch, ...). Those are concatenated on axis 1.
+    Single-head arrays (batch, n_tasks, ...) are concatenated on axis 0.
+    """
+    if len(pred_chunks) == 0:
+        return np.array(pred_chunks)
+
+    arrays = [np.asarray(p) for p in pred_chunks]
+    first = pred_chunks[0]
+    if isinstance(first, (list, tuple)):
+        return np.concatenate(arrays, axis=1)
+
+    try:
+        return np.concatenate(arrays, axis=0)
+    except ValueError:
+        try:
+            return np.concatenate(arrays, axis=1)
+        except ValueError:
+            return np.vstack(arrays)
+
+
+def _select_scalar_task(pred, task_idx, n_samples):
+    """Reduce stacked predictions to shape (N, 1) for one task."""
+    pred = np.asarray(pred)
+    if pred.ndim == 0:
+        y = np.array([pred], dtype=pred.dtype)
+    elif pred.ndim == 1:
+        y = pred
+    elif pred.ndim >= 3 and pred.shape[1] == n_samples:
+        # list/tuple of heads stacked as (n_tasks, N, ...); also covers N == n_tasks
+        y = pred[task_idx]
+    elif pred.shape[0] == n_samples:
+        # sample-first: (N, n_tasks, ...)
+        y = pred[:, task_idx]
+    else:
+        # task-first 2D: (n_tasks, N)
+        y = pred[task_idx]
+
+    y = np.asarray(y)
+    while y.ndim > 2:
+        y = np.squeeze(y, axis=-1)
+    if y.ndim == 1:
+        y = y[:, np.newaxis]
+    return y
+
+
 def predict_in_batches(x, x_ref=None, model_pred_fun=None, batch_size=None, task_idx=None, save_window=None, **kwargs):
     """Function to compute model predictions in batch mode.
 
@@ -207,7 +274,7 @@ def predict_in_batches(x, x_ref=None, model_pred_fun=None, batch_size=None, task
 
         p = model_pred_fun(x_batch.astype(float))
         if task_idx is not None:
-            p = p[task_idx]
+            p = _index_prediction_task(p, task_idx)
         pred.append(p, **kwargs)
 
     if num_batches*batch_size < N:
@@ -220,14 +287,10 @@ def predict_in_batches(x, x_ref=None, model_pred_fun=None, batch_size=None, task
 
         p = model_pred_fun(x_batch.astype(float))
         if task_idx is not None:
-            p = p[task_idx]
+            p = _index_prediction_task(p, task_idx)
         pred.append(p, **kwargs)
 
-    try:
-        preds = np.concatenate(pred, axis=1)
-    except ValueError as ve:
-        preds = np.vstack(pred)
-    return preds
+    return _stack_batch_preds(pred)
 
 
 
